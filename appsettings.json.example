@@ -1,0 +1,19 @@
+{
+  "ConnectionStrings": {
+    "IdentityConnectionString": "Server=127.0.0.1; port=3306; Database=database; user=admin; password=pwd; Persist security Info = true"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Kestrel": {
+    "Endpoints": {
+      "Https": {
+        "Url": "https://*:5001"
+      }
+    }
+  }
+}

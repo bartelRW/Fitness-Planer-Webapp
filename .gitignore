@@ -1,0 +1,22 @@
+# Secrets and Appsettings
+appsettings.json
+
+# build folder
+bin/
+obj/
+
+# User and IDE files
+.vs/
+.vscode/
+*.user
+
+# package manager
+packages/
+*.nupkg
+
+# logs
+*.log
+
+# system files
+.DS_Store
+Thumbs.db
