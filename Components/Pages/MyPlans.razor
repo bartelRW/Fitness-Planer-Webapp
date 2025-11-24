@@ -1,0 +1,60 @@
+﻿@page "/myplans"
+
+@inject ApplicationDbContext Context
+
+<h1>Meine Fitnesspläne</h1>
+
+<div class="mb-4">
+    @if (Folders is not null)
+    {
+        <div class="accordion accordion-flush" id="accordion-folders">
+            @foreach (var folder in Folders)
+            {
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@folder.Id" aria-expanded="false" aria-controls="collapse-@folder.Id">
+                            @folder.Name
+                        </button>
+                    </h2>
+                    <div id="collapse-@folder.Id" class="accordion-collapse collapse">
+                        @if(Plans is not null){
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning m-2" role="alert">
+                                <h5>Keine Pläne vorhanden!</h5>
+                                <p>Scheint so als wäre in diesem Ordner noch kein Plan vorhanden. Klicken sie auf die Schaltfläche "Plan Hinzufügen" um einen neuen Plan zu erstellen</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            <h3>Keine Ordner vorhanden!</h3>
+            <p class="fs-5">Sieht so als hätten Sie noch keinen Ordner erstellt. Klicken sie auf die Schaltfläche "Ordner Hinzufügen" um einen neuen Ordner zu erstellen</p>
+        </div>
+    }
+</div>
+
+<div>
+    <button class="btn btn-lg btn-success">
+        <i class="bi bi-plus-lg"></i>
+        <i class="bi bi-folder-fill me-1"></i>
+        Ordner hinzufügen
+    </button>
+</div>
+
+@code {
+    private List<Folder>? Folders { get; set; }
+
+    private List<Plan>? Plans { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Folders = await Context.Folders.ToListAsync();
+    }
+}
