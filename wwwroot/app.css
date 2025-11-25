@@ -76,3 +76,7 @@ h1:focus {
 .brand-sidebar {
     background: linear-gradient(to bottom, #0757a8 30%,#a2d208 100%) !important;
 }
+
+.brand-background {
+    background-color: #064a86;
+}

@@ -12,7 +12,8 @@ var connectionString = builder.Configuration.GetConnectionString("ConnectionStri
 // Register ApplicationDbContext with MySQL provider
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-
+// Add BlazorBootstrap services
+builder.Services.AddBlazorBootstrap();
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
