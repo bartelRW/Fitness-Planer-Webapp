@@ -1,8 +1,9 @@
 ﻿@page "/myFolders"
 
 @inject ApplicationDbContext Context
+@inject IJSRuntime JS
 
-<h1>Meine Ordner</h1>
+<h1>Übersicht</h1>
 
 <div class="mb-4">
     @if (IsLoading)
@@ -19,6 +20,7 @@
                             <tr class="fw-bold">
                                 <td>Name</td>
                                 <td>Beschreibung</td>
+                                <td class="text-center">Trainingspläne</td>
                                 <td class="text-end pe-4">Funktionen</td>
                             </tr>
                         </thead>
@@ -31,6 +33,7 @@
                                         @folder.Name
                                         </td>
                                     <td>@folder.Description</td>
+                                    <td class="text-center">@FolderPlans?.Count(fp => fp.FolderId == folder.Id)</td>
                                     <td class="text-end">
                                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                             <a class="btn btn-primary" href="/myplans/@folder.Id">
@@ -74,13 +77,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">Ordner @(Folder.Id == 0 ? "hinzufügen" : "bearbeiten")</h1>
+                <h1 class="modal-title fw-bold fs-5">Ordner @(Folder.Id == 0 ? "hinzufügen" : "bearbeiten")</h1>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col">
-                        <EditForm Model="Folder" Context="FormCtx" OnValidSubmit="CreateOrEditFolderAsync">
-                            <DataAnnotationsValidator />
+                        <EditForm Model="Folder" OnValidSubmit="CreateOrEditFolderAsync">
                             <ValidationSummary />
                             <div class="mb-3">
                                 <label class="form-label">Name</label>
@@ -93,7 +95,7 @@
 
                             <div class="row">
                                 <div class="col">
-                                    <button type="submit" class="btn btn-@(Folder.Id == 0 ? "success" : "warning") w-100" data-bs-dismiss="modal">
+                                    <button type="submit" class="btn btn-@(Folder.Id == 0 ? "success" : "warning") w-100">
                                         @(Folder.Id == 0 ? "Erstellen" : "Bearbeiten")
                                     </button>
                                 </div>
@@ -114,7 +116,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">Ordner @Folder.Name löschen?</h1>
+                <h1 class="modal-title fw-bold fs-5">Ordner @Folder.Name löschen?</h1>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -140,6 +142,8 @@
     private List<Plan>? Plans { get; set; }
     private Plan Plan { get; set; } = new();
 
+    private List<FolderPlan>? FolderPlans { get; set; }
+
     private bool IsLoading = true;
 
     #region Lifecycle Methods
@@ -147,6 +151,7 @@
     {
         // Load folders from database
         Folders = await Context.Folders.ToListAsync();
+        FolderPlans = await Context.FolderPlans.ToListAsync();
 
         // Show loading message to avoid flickering
         IsLoading = false;
@@ -156,26 +161,28 @@
     #region CRUD operations for Folders
     private async Task CreateOrEditFolderAsync()
     {
-        if(Folders is not null)
+        // Check if folder already exists
+        if (Folders?.Where(f => f.Id == Folder.Id).Count() > 0)
         {
-            // Check if folder already exists
-            if (Folders.Where(f => f.Id == Folder.Id).Count() > 0)
-            {
-                // Update folder in database
-                Context.Folders.Update(Folder);
-            }
-            else
-            {
-                // Add folder to database
-                Context.Folders.Add(Folder);
-            }
-
-            // Save changes
-            await Context.SaveChangesAsync();
+            // Update folder in database
+            Context.Folders.Update(Folder);
         }
+        else
+        {
+            // Add folder to database
+            Context.Folders.Add(Folder);
+        }
+
+        // Save changes
+        await Context.SaveChangesAsync();
+        
 
         // Reresh folder list and clear form
         Folders = await Context.Folders.ToListAsync();
+
+        // Close modal via JavaScript
+        await JS.InvokeVoidAsync("closeModal", "create-edit-folder-modal");
+        
         Folder = new();
 
         ShowMessage(ToastType.Success, "Ordner erstellt", "");

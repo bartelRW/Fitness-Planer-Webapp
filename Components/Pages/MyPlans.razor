@@ -2,10 +2,21 @@
 
 @inject NavigationManager Navigation
 @inject ApplicationDbContext Context
+@inject IJSRuntime JS
 
 <h1>@Folder?.Name > Trainingspläne</h1>
 
 <div class="mb-4">
+    @if (!string.IsNullOrWhiteSpace(Folder?.Description))
+    {
+        <div class="card mb-3 shadow">
+            <div class="card-body">
+                <i class="bi bi-info-square-fill text-primary"></i>
+                @Folder?.Description
+            </div>
+        </div>
+    }
+
     @if (IsLoading)
     {
         <div>Lädt...</div>
@@ -20,6 +31,9 @@
                             <tr class="fw-bold">
                                 <td>Name</td>
                                 <td>Beschreibung</td>
+                                <td class="text-center">
+                                    Dauer <span class="text-secondary">(Min)</span>
+                                </td>
                                 <td class="text-end pe-4">Funktionen</td>
                             </tr>
                         </thead>
@@ -32,6 +46,7 @@
                                         @plan.Name
                                     </td>
                                     <td>@plan.Description</td>
+                                    <td class="text-center">@plan.Duration</td>
                                     <td class="text-end">
                                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                             <button type="button" class="btn btn-primary" @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal">
@@ -80,12 +95,16 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col">
-                        <EditForm Model="Plan" Context="FormCtx" OnValidSubmit="CreateOrEditPlanAsync">
+                        <EditForm Model="Plan" OnValidSubmit="CreateOrEditPlanAsync">
                             <DataAnnotationsValidator />
                             <ValidationSummary />
                             <div class="mb-3">
                                 <label class="form-label">Name</label>
                                 <InputText @bind-Value="Plan.Name" class="form-control" placeholder="Neuer Trainingsplan" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dauer <span class="text-secondary">(Minuten)</span></label>
+                                <InputNumber @bind-Value="Plan.Duration" class="form-control" min="0" required />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Beschreibung <span class="text-secondary">(optional)</span></label>
@@ -94,7 +113,7 @@
 
                             <div class="row">
                                 <div class="col">
-                                    <button type="submit" class="btn btn-@(Plan.Id == 0 ? "success" : "warning") w-100" data-bs-dismiss="modal">
+                                    <button type="submit" class="btn btn-@(Plan.Id == 0 ? "success" : "warning") w-100">
                                         @(Plan.Id == 0 ? "Erstellen" : "Bearbeiten")
                                     </button>
                                 </div>
@@ -115,7 +134,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">Trainingsplan @Plan.Name löschen?</h1>
+                <h1 class="modal-title fw-bold fs-5">Trainingsplan @Plan.Name löschen?</h1>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -136,7 +155,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">@Plan.Name</h1>
+                <h1 class="modal-title fw-bold fs-5">@Plan.Name</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -147,10 +166,10 @@
                             <thead>
                                 <tr class="fw-bold">
                                     <td>Name</td>
-                                    <td>Sätze</td>
-                                    <td>Wiederholungen</td>
+                                    <td class="text-center">Sätze</td>
+                                    <td class="text-center">Wiederholungen</td>
                                     <td>Notizen</td>
-                                    <td class="text-end pe-4">Funktionen</td>
+                                    <td></td>
                                 </tr>
                             </thead>
                             <tbody>
@@ -158,11 +177,11 @@
                                 {
                                     <tr>
                                         <td>@exercise.Name</td>
-                                        <td>@exercise.Sets</td>
-                                        <td>@exercise.Repetitions</td>
+                                        <td class="text-center">@exercise.Sets</td>
+                                        <td class="text-center">@exercise.Repetitions</td>
                                         <td>@exercise.Notes</td>
                                         <td class="text-end">
-                                            <button class="btn btn-danger" @onclick="async () => await RemoveExerciseAsync(exercise)">
+                                            <button class="btn" @onclick="async () => await RemoveExerciseAsync(exercise)">
                                                 <i class="bi bi-x-lg"></i>
                                             </button>
                                         </td>
@@ -194,11 +213,11 @@
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" >Übung hinzufügen</h1>
+                <h1 class="modal-title fw-bold fs-5">Übung hinzufügen</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <EditForm Model="Exercise" Context="FormCtx" OnValidSubmit="AddExerciseAsync">
+                <EditForm Model="Exercise" OnValidSubmit="AddExerciseAsync">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
                     <div class="mb-3">
@@ -207,11 +226,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Sätze</label>
-                        <InputNumber @bind-Value="Exercise.Sets" class="form-control" required/>
+                        <InputNumber @bind-Value="Exercise.Sets" class="form-control" min="0" max="1000" required/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Wiederholungen</label>
-                        <InputNumber @bind-Value="Exercise.Repetitions" class="form-control" required/>
+                        <InputNumber @bind-Value="Exercise.Repetitions" class="form-control" min="0" max="1000" required />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notizen <span class="text-secondary">(optional)</span></label>
@@ -220,7 +239,7 @@
 
                     <div class="row">
                         <div class="col">
-                            <button type="submit" class="btn btn-success w-100" data-bs-target="#exercise-modal" data-bs-toggle="modal">
+                            <button type="submit" class="btn btn-success w-100">
                                 Übung hinzufügen
                             </button>
                         </div>
@@ -318,6 +337,10 @@
 
         // Refresh list
         Plans = await Context.FolderPlans.Where(fp => fp.FolderId == FolderId).Select(fp => fp.Plan!).ToListAsync();
+
+        // Close modal via JavaScript
+        await JS.InvokeVoidAsync("closeModal", "create-edit-plan-modal");
+
         Plan = new();
 
         ShowMessage(ToastType.Success, "Trainingsplan erstellt", "");
@@ -368,6 +391,11 @@
 
         // Refresh exercise list
         ExercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == Plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+
+        // Switch back to previous modal
+        await JS.InvokeVoidAsync("closeModal", "add-exercise-modal");
+        await JS.InvokeVoidAsync("openModal", "exercise-modal");
+
         Exercise = new();
 
         ShowMessage(ToastType.Success, "Übung hinzugefügt", "");

@@ -1,4 +1,6 @@
-﻿namespace FitnessPlaner.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FitnessPlaner.Data.Models
 {
     public class Folder
     {
