@@ -1,10 +1,17 @@
 ﻿@page "/myplans/{folderId:int}"
+@using System.Text
 
 @inject NavigationManager Navigation
 @inject ApplicationDbContext Context
+@inject ToastsService ToastService
 @inject IJSRuntime JS
 
-<h1>@Folder?.Name > Trainingspläne</h1>
+<PageTitle>Pläne</PageTitle>
+
+<h1>
+    <a class="text-decoration-none text-black" href="/myfolders">@Folder.Name</a> 
+    > Trainingspläne
+    </h1>
 
 <div class="mb-4">
     @if (!string.IsNullOrWhiteSpace(Folder?.Description))
@@ -41,7 +48,7 @@
                             @foreach (var plan in Plans)
                             {
                                 <tr>
-                                    <td>
+                                    <td @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal" style="cursor:pointer">
                                         <i class="bi bi-clipboard2-check-fill"></i>
                                         @plan.Name
                                     </td>
@@ -51,6 +58,9 @@
                                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                             <button type="button" class="btn btn-primary" @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal">
                                                 <i class="bi bi-person-arms-up"></i>
+                                            </button>
+                                            <button class="btn btn-success" @onclick="() => DownloadCSVAsync(plan)">
+                                                <i class="bi bi-filetype-csv"></i>
                                             </button>
                                             <button type="button" class="btn btn-warning" @onclick="() => Plan = plan" data-bs-toggle="modal" data-bs-target="#create-edit-plan-modal">
                                                 <i class="bi bi-pencil-fill"></i>
@@ -198,7 +208,7 @@
                     </div>
                 }
 
-                <button class="btn btn-lg btn-success shadow" data-bs-target="#add-exercise-modal" data-bs-toggle="modal">
+                <button class="btn btn-lg btn-success shadow me-2" data-bs-target="#add-exercise-modal" data-bs-toggle="modal">
                     <i class="bi bi-plus-lg"></i>
                     <i class="bi bi-person-arms-up"></i>
                     Übung hinzufügen
@@ -260,6 +270,8 @@
     [Parameter]
     public int FolderId { get; set; }
 
+    List<ToastMessage> ToastMessages = new List<ToastMessage>();
+
     private Folder Folder { get; set; } = new();
     private List<Plan>? Plans { get; set; }
     private Plan Plan { get; set; } = new();
@@ -309,6 +321,7 @@
             // Update existing plan
             existingPlan.Name = Plan.Name;
             Context.Plans.Update(existingPlan);
+            ToastService.ShowMessage(ToastType.Warning, "Trainingsplan bearbeitet", "", ToastMessages);
 
             // Check if Folder-Plan mapping already exists
             if (!existingPlan.FolderPlans.Any(fp => fp.FolderId == Folder.Id))
@@ -333,6 +346,7 @@
                 PlanId = Plan.Id
             });
             await Context.SaveChangesAsync();
+            ToastService.ShowMessage(ToastType.Success, "Trainingsplan erstellt", "", ToastMessages);
         }
 
         // Refresh list
@@ -342,8 +356,6 @@
         await JS.InvokeVoidAsync("closeModal", "create-edit-plan-modal");
 
         Plan = new();
-
-        ShowMessage(ToastType.Success, "Trainingsplan erstellt", "");
     }
 
     private async Task DeletePlanAsync()
@@ -368,8 +380,39 @@
         Plans = await Context.FolderPlans.Where(fp => fp.FolderId == FolderId).Select(fp => fp.Plan!).ToListAsync();
         Plan = new();
 
-        ShowMessage(ToastType.Danger, "Trainingsplan gelöscht", "");
+        ToastService.ShowMessage(ToastType.Danger, "Trainingsplan gelöscht", "", ToastMessages);
     }
+
+    private async Task DownloadCSVAsync(Plan plan)
+    {
+        if (plan == null)
+            return;
+
+        // Get exercises for the plan
+        var exercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+
+        var csv = new StringBuilder();
+
+        // Header
+        csv.AppendLine("Name;Saetze;Wiederholungen;Notizen");
+
+        // Rows
+        foreach (var exercise in exercisesForPlan)
+        {
+            if (exercise == null) continue;
+
+            csv.AppendLine($"{exercise.Name};{exercise.Sets};{exercise.Repetitions};{exercise.Notes}");
+        }
+
+        // Convert to stream
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+        var stream = new MemoryStream(bytes);
+
+        // Trigger download via javaScript
+        using var streamRef = new DotNetStreamReference(stream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", $"trainingsplan_{plan.Name.ToLower()}.csv", streamRef);
+    }
+
     #endregion CRUD operations for Plans
 
     #region CRUD operations for Exercises
@@ -398,7 +441,7 @@
 
         Exercise = new();
 
-        ShowMessage(ToastType.Success, "Übung hinzugefügt", "");
+        ToastService.ShowMessage(ToastType.Success, "Übung hinzugefügt", "", ToastMessages);
     }
 
     private async Task RemoveExerciseAsync(Exercise exercise)
@@ -422,17 +465,7 @@
         // Refresh list
         ExercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == Plan.Id).Select(pe => pe.Exercise!).ToListAsync();
 
-        ShowMessage(ToastType.Danger, "Übung entfernt", "");
+        ToastService.ShowMessage(ToastType.Danger, "Übung entfernt", "", ToastMessages);
     }
     #endregion CRUD operations for Exercises
-
-    List<ToastMessage> ToastMessages = new List<ToastMessage>();
-    private void ShowMessage(ToastType toastType, string title, string message) => ToastMessages.Add(CreateToastMessage(toastType, title, message));
-    private ToastMessage CreateToastMessage(ToastType toastType, string title, string message) => new ToastMessage
-    {
-        Type = toastType,
-        Title = title,
-        HelpText = $"{DateTime.Now:HH:mm}",
-        Message = message,
-    };
 }

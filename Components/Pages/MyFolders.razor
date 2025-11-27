@@ -2,6 +2,9 @@
 
 @inject ApplicationDbContext Context
 @inject IJSRuntime JS
+@inject ToastsService ToastService
+
+<PageTitle>Übersicht</PageTitle>
 
 <h1>Übersicht</h1>
 
@@ -29,8 +32,10 @@
                             {
                                 <tr @key="folder.Id">
                                     <td>
-                                        <i class="bi bi-folder-fill"></i>
-                                        @folder.Name
+                                        <a class="text-decoration-none text-black" href="/myplans/@folder.Id">
+                                            <i class="bi bi-folder-fill"></i>
+                                            @folder.Name
+                                        </a>
                                         </td>
                                     <td>@folder.Description</td>
                                     <td class="text-center">@FolderPlans?.Count(fp => fp.FolderId == folder.Id)</td>
@@ -136,6 +141,8 @@
 <Toasts class="p-3" Messages="ToastMessages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
 
 @code {
+    List<ToastMessage> ToastMessages = new List<ToastMessage>();
+
     private List<Folder>? Folders { get; set; }
     private Folder Folder { get; set; } = new();
 
@@ -166,26 +173,25 @@
         {
             // Update folder in database
             Context.Folders.Update(Folder);
+            ToastService.ShowMessage(ToastType.Warning, "Ordner bearbeitet", "", ToastMessages);
         }
         else
         {
             // Add folder to database
             Context.Folders.Add(Folder);
+            ToastService.ShowMessage(ToastType.Success, "Ordner erstellt", "", ToastMessages);
         }
 
         // Save changes
         await Context.SaveChangesAsync();
         
+        // Close modal via JavaScript
+        await JS.InvokeVoidAsync("closeModal", "create-edit-folder-modal");
 
         // Reresh folder list and clear form
         Folders = await Context.Folders.ToListAsync();
-
-        // Close modal via JavaScript
-        await JS.InvokeVoidAsync("closeModal", "create-edit-folder-modal");
         
         Folder = new();
-
-        ShowMessage(ToastType.Success, "Ordner erstellt", "");
     }
 
     private async Task DeleteFolderAsync()
@@ -201,18 +207,7 @@
         Folders = await Context.Folders.ToListAsync();
         Folder = new();
 
-        ShowMessage(ToastType.Danger, "Ordner gelöscht", "");
+        ToastService.ShowMessage(ToastType.Danger, "Ordner gelöscht", "", ToastMessages);
     }
     #endregion CRUD operations for Folders
-
-
-    List<ToastMessage> ToastMessages = new List<ToastMessage>();
-    private void ShowMessage(ToastType toastType, string title, string message) => ToastMessages.Add(CreateToastMessage(toastType, title, message));
-    private ToastMessage CreateToastMessage(ToastType toastType, string title, string message) => new ToastMessage
-    {
-        Type = toastType,
-        Title = title,
-        HelpText = $"{DateTime.Now:HH:mm}",
-        Message = message,
-    };
 }

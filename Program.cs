@@ -1,4 +1,5 @@
 using FitnessPlaner.Components;
+using FitnessPlaner.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(
 // Add BlazorBootstrap services
 builder.Services.AddBlazorBootstrap();
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+//Add Custom Services
+builder.Services.AddScoped<ToastsService>();
 
 var app = builder.Build();
 
