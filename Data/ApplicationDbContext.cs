@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<FolderPlan> FolderPlans => Set<FolderPlan>();
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<PlanExercise> PlanExercises => Set<PlanExercise>();
+    public DbSet<NutritionGoal> NutritionGoals => Set<NutritionGoal>();
 
     // Configure the model
     protected override void OnModelCreating(ModelBuilder builder)
@@ -21,5 +22,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<FolderPlan>().ToTable("folderplans");
         builder.Entity<Plan>().ToTable("plans");
         builder.Entity<PlanExercise>().ToTable("planexercises");
+        builder.Entity<NutritionGoal>().ToTable("nutritiongoal");
     }
 }

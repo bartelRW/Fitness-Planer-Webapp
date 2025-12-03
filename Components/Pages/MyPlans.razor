@@ -9,9 +9,8 @@
 <PageTitle>Pläne</PageTitle>
 
 <h1>
-    <a class="text-decoration-none text-black" href="/myfolders">@Folder.Name</a> 
-    > Trainingspläne
-    </h1>
+    <a class="text-decoration-none text-black" href="/myfolders">@Folder.Name</a> > Trainingspläne
+</h1>
 
 <div class="mb-4">
     @if (!string.IsNullOrWhiteSpace(Folder?.Description))
@@ -26,7 +25,9 @@
 
     @if (IsLoading)
     {
-        <div>Lädt...</div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Lädt...</span>
+        </div>
     }
     else if (Plans is not null && Plans.Count > 0)
     {
@@ -47,7 +48,7 @@
                         <tbody>
                             @foreach (var plan in Plans)
                             {
-                                <tr>
+                                <tr @key="plan.Id">
                                     <td @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal" style="cursor:pointer">
                                         <i class="bi bi-clipboard2-check-fill"></i>
                                         @plan.Name
@@ -62,7 +63,7 @@
                                             <button class="btn btn-success" @onclick="() => DownloadCSVAsync(plan)">
                                                 <i class="bi bi-filetype-csv"></i>
                                             </button>
-                                            <button type="button" class="btn btn-warning" @onclick="() => Plan = plan" data-bs-toggle="modal" data-bs-target="#create-edit-plan-modal">
+                                            <button type="button" class="btn btn-warning" @onclick="() => OpenModal(plan)" data-bs-toggle="modal" data-bs-target="#create-edit-plan-modal">
                                                 <i class="bi bi-pencil-fill"></i>
                                             </button>
                                             <button type="button" class="btn btn-danger" @onclick="() => Plan = plan" data-bs-toggle="modal" data-bs-target="#delete-modal">
@@ -88,7 +89,7 @@
 </div>
 
 <div>
-    <button class="btn btn-lg btn-success shadow" data-bs-toggle="modal" data-bs-target="#create-edit-plan-modal" @onclick="() => Plan = new()">
+    <button class="btn btn-lg btn-success shadow" data-bs-toggle="modal" data-bs-target="#create-edit-plan-modal" @onclick="() => ViewPlan = new()">
         <i class="bi bi-plus-lg"></i>
         <i class="bi bi-clipboard2-check-fill me-1"></i>
         Trainingsplan hinzufügen
@@ -105,26 +106,26 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col">
-                        <EditForm Model="Plan" OnValidSubmit="CreateOrEditPlanAsync">
+                        <EditForm Model="ViewPlan" OnValidSubmit="CreateOrEditPlanAsync">
                             <DataAnnotationsValidator />
                             <ValidationSummary />
                             <div class="mb-3">
                                 <label class="form-label">Name</label>
-                                <InputText @bind-Value="Plan.Name" class="form-control" placeholder="Neuer Trainingsplan" required />
+                                <InputText @bind-Value="ViewPlan.Name" class="form-control" placeholder="Neuer Trainingsplan" required />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Dauer <span class="text-secondary">(Minuten)</span></label>
-                                <InputNumber @bind-Value="Plan.Duration" class="form-control" min="0" required />
+                                <InputNumber @bind-Value="ViewPlan.Duration" class="form-control" min="0" required />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Beschreibung <span class="text-secondary">(optional)</span></label>
-                                <InputTextArea @bind-Value="Plan.Description" class="form-control" placeholder="Mein Trainingsplan" />
+                                <InputTextArea @bind-Value="ViewPlan.Description" class="form-control" placeholder="Mein Trainingsplan" />
                             </div>
 
                             <div class="row">
                                 <div class="col">
-                                    <button type="submit" class="btn btn-@(Plan.Id == 0 ? "success" : "warning") w-100">
-                                        @(Plan.Id == 0 ? "Erstellen" : "Bearbeiten")
+                                    <button type="submit" class="btn btn-@(ViewPlan.Id == 0 ? "success" : "warning") w-100">
+                                        @(ViewPlan.Id == 0 ? "Erstellen" : "Bearbeiten")
                                     </button>
                                 </div>
                                 <div class="col">
@@ -264,23 +265,21 @@
 </div>
 
 <!-- Toast-Messages -->
-<Toasts class="p-3" Messages="ToastMessages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
+<Toasts class="p-3" Messages="ToastService.Messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
 
 @code {
     [Parameter]
     public int FolderId { get; set; }
 
-    List<ToastMessage> ToastMessages = new List<ToastMessage>();
-
     private Folder Folder { get; set; } = new();
     private List<Plan>? Plans { get; set; }
     private Plan Plan { get; set; } = new();
+    private Plan ViewPlan { get; set; } = new();
     private List<Exercise>? ExercisesForPlan { get; set; }
     private Exercise Exercise { get; set; } = new();
 
     private bool IsLoading = true;
 
-    #region Lifecycle Methods
     protected override async Task OnInitializedAsync()
     {
         Folder = await Context.Folders.FindAsync(FolderId);
@@ -292,70 +291,96 @@
             return;
         }
 
-        Plans = await Context.FolderPlans.Where(fp => fp.FolderId == FolderId).Select(fp => fp.Plan!).ToListAsync();
+        Plans = await Context.FolderPlans
+            .Where(fp => fp.FolderId == FolderId)
+            .Select(fp => fp.Plan!)
+            .ToListAsync();
 
         // Show loading message to avoid flickering
         IsLoading = false;
     }
-    #endregion
 
     #region CRUD operations for Plans
     private async Task SelectPlanAsync(Plan selectedPlan)
     {
         Plan = selectedPlan;
+        ExercisesForPlan = await Context.PlanExercises
+            .Where(pe => pe.PlanId == Plan.Id)
+            .Select(pe => pe.Exercise!)
+            .ToListAsync();
+    }
 
-        ExercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == Plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+    private void OpenModal(Plan plan)
+    {
+        // Create temporary clone for editing
+        ViewPlan = new Plan
+        {
+            Id = plan.Id,
+            Name = plan.Name,
+            Duration = plan.Duration,
+            Description = plan.Description
+        };
 
-        StateHasChanged();
+        // Keep original for reference if needed
+        Plan = plan;
     }
 
     private async Task CreateOrEditPlanAsync()
     {
         if (Plans is null) return;
 
-        // Check if plan already exists
-        var existingPlan = await Context.Plans.Include(p => p.FolderPlans).FirstOrDefaultAsync(p => p.Id == Plan.Id);
-
-        if (existingPlan != null)
+        if (ViewPlan.Id != 0)
         {
-            // Update existing plan
-            existingPlan.Name = Plan.Name;
-            Context.Plans.Update(existingPlan);
-            ToastService.ShowMessage(ToastType.Warning, "Trainingsplan bearbeitet", "", ToastMessages);
+            // Load tracked entity from DB
+            var existingPlan = await Context.Plans
+                .Include(p => p.FolderPlans)
+                .FirstOrDefaultAsync(p => p.Id == ViewPlan.Id);
 
-            // Check if Folder-Plan mapping already exists
-            if (!existingPlan.FolderPlans.Any(fp => fp.FolderId == Folder.Id))
+            if (existingPlan is not null)
             {
-                existingPlan.FolderPlans.Add(new FolderPlan
+                // Copy updated values
+                existingPlan.Name = ViewPlan.Name;
+                existingPlan.Duration = ViewPlan.Duration;
+                existingPlan.Description = ViewPlan.Description;
+
+                ToastService.ShowMessage(ToastType.Warning, "Trainingsplan bearbeitet", "");
+
+                // Add Folder mapping if missing
+                if (!existingPlan.FolderPlans.Any(fp => fp.FolderId == Folder.Id))
                 {
-                    FolderId = Folder.Id,
-                    PlanId = existingPlan.Id
-                });
+                    existingPlan.FolderPlans.Add(new FolderPlan
+                    {
+                        FolderId = Folder.Id,
+                        PlanId = existingPlan.Id
+                    });
+                }
             }
         }
         else
         {
-            // New Plan
-            Context.Plans.Add(Plan);
+            // Add new plan
+            Context.Plans.Add(ViewPlan);
             await Context.SaveChangesAsync();
 
             // Add Folder-Plan mapping
             Context.FolderPlans.Add(new FolderPlan
             {
                 FolderId = Folder.Id,
-                PlanId = Plan.Id
+                PlanId = ViewPlan.Id
             });
             await Context.SaveChangesAsync();
-            ToastService.ShowMessage(ToastType.Success, "Trainingsplan erstellt", "", ToastMessages);
+
+            ToastService.ShowMessage(ToastType.Success, "Trainingsplan erstellt", "");
         }
 
         // Refresh list
-        Plans = await Context.FolderPlans.Where(fp => fp.FolderId == FolderId).Select(fp => fp.Plan!).ToListAsync();
+        Plans = await Context.FolderPlans
+            .Where(fp => fp.FolderId == Folder.Id)
+            .Select(fp => fp.Plan!)
+            .ToListAsync();
 
-        // Close modal via JavaScript
+        // Close modal via JS
         await JS.InvokeVoidAsync("closeModal", "create-edit-plan-modal");
-
-        Plan = new();
     }
 
     private async Task DeletePlanAsync()
@@ -363,7 +388,9 @@
         if (Plans is null || Plan.Id == 0) return;
 
         // Get existing plan with FolderPlan mappings
-        var existingPlan = await Context.Plans.Include(p => p.FolderPlans).FirstOrDefaultAsync(p => p.Id == Plan.Id);
+        var existingPlan = await Context.Plans
+            .Include(p => p.FolderPlans)
+            .FirstOrDefaultAsync(p => p.Id == Plan.Id);
 
         if (existingPlan != null)
         {
@@ -377,10 +404,13 @@
         }
 
         // Refresh list
-        Plans = await Context.FolderPlans.Where(fp => fp.FolderId == FolderId).Select(fp => fp.Plan!).ToListAsync();
+        Plans = await Context.FolderPlans
+            .Where(fp => fp.FolderId == FolderId)
+            .Select(fp => fp.Plan!)
+            .ToListAsync();
         Plan = new();
 
-        ToastService.ShowMessage(ToastType.Danger, "Trainingsplan gelöscht", "", ToastMessages);
+        ToastService.ShowMessage(ToastType.Danger, "Trainingsplan gelöscht", "");
     }
 
     private async Task DownloadCSVAsync(Plan plan)
@@ -389,20 +419,13 @@
             return;
 
         // Get exercises for the plan
-        var exercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+        var exercisesForPlan = await Context.PlanExercises
+            .Where(pe => pe.PlanId == plan.Id)
+            .Select(pe => pe.Exercise!)
+            .ToListAsync();
 
-        var csv = new StringBuilder();
-
-        // Header
-        csv.AppendLine("Name;Saetze;Wiederholungen;Notizen");
-
-        // Rows
-        foreach (var exercise in exercisesForPlan)
-        {
-            if (exercise == null) continue;
-
-            csv.AppendLine($"{exercise.Name};{exercise.Sets};{exercise.Repetitions};{exercise.Notes}");
-        }
+        var csv = "Name;Saetze;Wiederholungen;Notizen\n" +
+          string.Join("\n", exercisesForPlan.Select(e => $"{e.Name};{e.Sets};{e.Repetitions};{e.Notes}"));
 
         // Convert to stream
         var bytes = Encoding.UTF8.GetBytes(csv.ToString());
@@ -433,7 +456,10 @@
         await Context.SaveChangesAsync();
 
         // Refresh exercise list
-        ExercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == Plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+        ExercisesForPlan = await Context.PlanExercises
+            .Where(pe => pe.PlanId == Plan.Id)
+            .Select(pe => pe.Exercise!)
+            .ToListAsync();
 
         // Switch back to previous modal
         await JS.InvokeVoidAsync("closeModal", "add-exercise-modal");
@@ -441,7 +467,7 @@
 
         Exercise = new();
 
-        ToastService.ShowMessage(ToastType.Success, "Übung hinzugefügt", "", ToastMessages);
+        ToastService.ShowMessage(ToastType.Success, "Übung hinzugefügt", "");
     }
 
     private async Task RemoveExerciseAsync(Exercise exercise)
@@ -449,7 +475,9 @@
         if (exercise is null || exercise.Id == 0) return;
 
         // Get existing plan with FolderPlan mappings
-        var existingExercise = await Context.Exercises.Include(p => p.PlanExercises).FirstOrDefaultAsync(p => p.Id == exercise.Id);
+        var existingExercise = await Context.Exercises
+            .Include(p => p.PlanExercises)
+            .FirstOrDefaultAsync(p => p.Id == exercise.Id);
 
         if (existingExercise != null)
         {
@@ -463,9 +491,12 @@
         }
 
         // Refresh list
-        ExercisesForPlan = await Context.PlanExercises.Where(pe => pe.PlanId == Plan.Id).Select(pe => pe.Exercise!).ToListAsync();
+        ExercisesForPlan = await Context.PlanExercises
+            .Where(pe => pe.PlanId == Plan.Id)
+            .Select(pe => pe.Exercise!)
+            .ToListAsync();
 
-        ToastService.ShowMessage(ToastType.Danger, "Übung entfernt", "", ToastMessages);
+        ToastService.ShowMessage(ToastType.Danger, "Übung entfernt", "");
     }
     #endregion CRUD operations for Exercises
 }

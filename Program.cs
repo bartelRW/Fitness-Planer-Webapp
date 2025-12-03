@@ -18,7 +18,7 @@ builder.Services.AddBlazorBootstrap();
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 //Add Custom Services
-builder.Services.AddScoped<ToastsService>();
+builder.Services.AddTransient<ToastsService>();
 
 var app = builder.Build();
 

@@ -11,14 +11,16 @@
 <div class="mb-4">
     @if (IsLoading)
     {
-        <div>Lädt...</div>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Lädt...</span>
+        </div>
     }
     else if (Folders is not null && Folders.Count > 0)
     {
         <div class="card shadow">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table">
                         <thead>
                             <tr class="fw-bold">
                                 <td>Name</td>
@@ -32,22 +34,28 @@
                             {
                                 <tr @key="folder.Id">
                                     <td>
-                                        <a class="text-decoration-none text-black" href="/myplans/@folder.Id">
-                                            <i class="bi bi-folder-fill"></i>
-                                            @folder.Name
+                                        <a href="/myplans/@folder.Id" class="text-decoration-none text-black">
+                                            <i class="bi bi-folder-fill"></i> @folder.Name
                                         </a>
-                                        </td>
+                                    </td>
                                     <td>@folder.Description</td>
                                     <td class="text-center">@FolderPlans?.Count(fp => fp.FolderId == folder.Id)</td>
                                     <td class="text-end">
-                                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                        <div class="btn-group" role="group">
                                             <a class="btn btn-primary" href="/myplans/@folder.Id">
                                                 <i class="bi bi-clipboard2-check-fill"></i>
                                             </a>
-                                            <button type="button" class="btn btn-warning" @onclick="() => Folder = folder" data-bs-toggle="modal" data-bs-target="#create-edit-folder-modal">
+                                            <button type="button" class="btn btn-warning"
+                                                    @onclick="() => OpenModal(folder)"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#create-edit-modal">
                                                 <i class="bi bi-pencil-fill"></i>
                                             </button>
-                                            <button type="button" class="btn btn-danger" @onclick="() => Folder = folder" data-bs-toggle="modal" data-bs-target="#delete-modal">
+                                            <button type="button"
+                                                    class="btn btn-danger"
+                                                    @onclick="() => ViewFolder = folder"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#delete-modal">
                                                 <i class="bi bi-trash3-fill"></i>
                                             </button>
                                         </div>
@@ -64,13 +72,16 @@
     {
         <div class="alert alert-warning" role="alert">
             <h3>Keine Ordner vorhanden!</h3>
-            <p class="fs-5">Sieht so als hätten Sie noch keinen Ordner erstellt. Klicken sie auf die Schaltfläche "Ordner Hinzufügen" um einen neuen Ordner zu erstellen</p>
+            <p class="fs-5">Sieht so aus, als hätten Sie noch keinen Ordner erstellt.</p>
         </div>
     }
 </div>
 
 <div>
-    <button class="btn btn-lg btn-success shadow" data-bs-toggle="modal" data-bs-target="#create-edit-folder-modal" @onclick="() => Folder = new()">
+    <button class="btn btn-lg btn-success shadow"
+            data-bs-toggle="modal"
+            data-bs-target="#create-edit-modal"
+            @onclick="() => OpenModal(new Folder())">
         <i class="bi bi-plus-lg"></i>
         <i class="bi bi-folder-fill me-1"></i>
         Ordner hinzufügen
@@ -78,39 +89,41 @@
 </div>
 
 <!-- Create-Edit-Folder-Modal -->
-<div class="modal fade" id="create-edit-folder-modal" data-bs-backdrop="static" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="create-edit-modal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fw-bold fs-5">Ordner @(Folder.Id == 0 ? "hinzufügen" : "bearbeiten")</h1>
+                <h1 class="modal-title fw-bold fs-5">
+                    Ordner @(ViewFolder.Id == 0 ? "hinzufügen" : "bearbeiten")
+                </h1>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col">
-                        <EditForm Model="Folder" OnValidSubmit="CreateOrEditFolderAsync">
-                            <ValidationSummary />
-                            <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <InputText @bind-Value="Folder.Name" class="form-control" placeholder="Neuer Ordner" required/>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Beschreibung <span class="text-secondary">(optional)</span></label>
-                                <InputTextArea @bind-Value="Folder.Description" class="form-control" placeholder="Mein Ordner" />
-                            </div>
+                <EditForm Model="ViewFolder" OnValidSubmit="CreateorEditViewFolderAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
 
-                            <div class="row">
-                                <div class="col">
-                                    <button type="submit" class="btn btn-@(Folder.Id == 0 ? "success" : "warning") w-100">
-                                        @(Folder.Id == 0 ? "Erstellen" : "Bearbeiten")
-                                    </button>
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal"> Abbrechen </button>
-                                </div>
-                            </div>
-                        </EditForm>
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <InputText @bind-Value="ViewFolder.Name" class="form-control" placeholder="Neuer Ordner" required />
                     </div>
-                </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Beschreibung <span class="text-secondary">(optional)</span></label>
+                        <InputTextArea @bind-Value="ViewFolder.Description" class="form-control" placeholder="Mein Ordner" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <button type="submit" class="btn btn-@(ViewFolder.Id == 0 ? "success" : "warning") w-100">
+                                @(ViewFolder.Id == 0 ? "Erstellen" : "Bearbeiten")
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal">Abbrechen</button>
+                        </div>
+                    </div>
+
+                </EditForm>
             </div>
         </div>
     </div>
@@ -121,15 +134,19 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fw-bold fs-5">Ordner @Folder.Name löschen?</h1>
+                <h1 class="modal-title fw-bold fs-5">Ordner @ViewFolder.Name löschen?</h1>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col">
-                        <button type="button" class="btn btn-danger w-100" @onclick="DeleteFolderAsync" data-bs-dismiss="modal">Löschen</button>
+                        <button type="button" class="btn btn-danger w-100" @onclick="DeleteFolderAsync" data-bs-dismiss="modal">
+                            Löschen
+                        </button>
                     </div>
                     <div class="col">
-                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">abbrechen</button>
+                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">
+                            Abbrechen
+                        </button>
                     </div>
                 </div>
             </div>
@@ -137,77 +154,78 @@
     </div>
 </div>
 
-<!-- Toast-Messages -->
-<Toasts class="p-3" Messages="ToastMessages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
+<Toasts class="p-3" Messages="ToastService.Messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
 
 @code {
-    List<ToastMessage> ToastMessages = new List<ToastMessage>();
-
     private List<Folder>? Folders { get; set; }
-    private Folder Folder { get; set; } = new();
-
-    private List<Plan>? Plans { get; set; }
-    private Plan Plan { get; set; } = new();
+    //private Folder Folder { get; set; } = new();
+    private Folder ViewFolder { get; set; } = new();
 
     private List<FolderPlan>? FolderPlans { get; set; }
 
     private bool IsLoading = true;
 
-    #region Lifecycle Methods
     protected override async Task OnInitializedAsync()
     {
-        // Load folders from database
         Folders = await Context.Folders.ToListAsync();
         FolderPlans = await Context.FolderPlans.ToListAsync();
-
-        // Show loading message to avoid flickering
         IsLoading = false;
     }
-    #endregion Lifecycle Methods
 
-    #region CRUD operations for Folders
-    private async Task CreateOrEditFolderAsync()
+    #region Folder CRUD
+    private void OpenModal(Folder folder)
     {
-        // Check if folder already exists
-        if (Folders?.Where(f => f.Id == Folder.Id).Count() > 0)
+        // Create a temporary clone for editing
+        ViewFolder = new Folder
         {
-            // Update folder in database
-            Context.Folders.Update(Folder);
-            ToastService.ShowMessage(ToastType.Warning, "Ordner bearbeitet", "", ToastMessages);
+            Id = folder.Id,
+            Name = folder.Name,
+            Description = folder.Description
+        };
+    }
+
+    private async Task CreateorEditViewFolderAsync()
+    {
+        // Edit existing folder
+        if (ViewFolder.Id != 0)
+        {
+            // Load the tracked entity from the database
+            var existingFolder = await Context.Folders.FindAsync(ViewFolder.Id);
+
+            if (existingFolder != null)
+            {
+                // Copy updated values
+                existingFolder.Name = ViewFolder.Name;
+                existingFolder.Description = ViewFolder.Description;
+
+                ToastService.ShowMessage(ToastType.Warning, "Ordner bearbeitet", "");
+            }
         }
         else
         {
-            // Add folder to database
-            Context.Folders.Add(Folder);
-            ToastService.ShowMessage(ToastType.Success, "Ordner erstellt", "", ToastMessages);
+            // Add new folder
+            Context.Folders.Add(ViewFolder);
+            ToastService.ShowMessage(ToastType.Success, "Ordner erstellt", "");
         }
 
-        // Save changes
         await Context.SaveChangesAsync();
-        
-        // Close modal via JavaScript
-        await JS.InvokeVoidAsync("closeModal", "create-edit-folder-modal");
 
-        // Reresh folder list and clear form
+        await JS.InvokeVoidAsync("closeModal", "create-edit-modal");
+
         Folders = await Context.Folders.ToListAsync();
-        
-        Folder = new();
     }
 
     private async Task DeleteFolderAsync()
     {
-        if(Folder is not null)
+        if (ViewFolder is not null)
         {
-            // Delete folder in database
-            Context.Folders.Remove(Folder);
+            Context.Folders.Remove(ViewFolder);
             await Context.SaveChangesAsync();
         }
 
-        // Reresh folder list
         Folders = await Context.Folders.ToListAsync();
-        Folder = new();
 
-        ToastService.ShowMessage(ToastType.Danger, "Ordner gelöscht", "", ToastMessages);
+        ToastService.ShowMessage(ToastType.Danger, "Ordner gelöscht", "");
     }
-    #endregion CRUD operations for Folders
+    #endregion Folder CRUD
 }

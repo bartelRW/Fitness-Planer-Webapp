@@ -1,0 +1,183 @@
+﻿@page "/mymeals"
+
+<PageTitle>Mahlzeiten</PageTitle>
+
+@inject ApplicationDbContext Context
+@inject ToastsService ToastService
+@inject IJSRuntime JS
+
+<h1>Meine Mahlzeiten</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <h4 class="mb-3">Tägliches Ernährungsziel</h4>
+        <div class="row">
+            <div class="col-12 col-md mb-3">
+                <div class="card h-100">
+                    <div class="card-body bg-success-subtle shadow d-flex align-items-start gap-2">
+                        <i class="bi bi-egg-fill fs-1"></i>
+                        <div class="flex-grow-1">
+                            <b>Kalorien:</b> @nutritionGoal.Calories kcal
+                            <div class="progress mt-1" role="progressbar">
+                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Calories</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md mb-3">
+                <div class="card h-100">
+                    <div class="card-body bg-warning-subtle shadow d-flex align-items-start gap-2">
+                        <i class="bi bi-egg-fill fs-1"></i>
+                        <div class="flex-grow-1">
+                            <b>Kohlenhydrate:</b> @nutritionGoal.Carbohydrates g
+                            <div class="progress mt-1" role="progressbar">
+                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Carbohydrates</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md mb-3">
+                <div class="card h-100">
+                    <div class="card-body bg-danger-subtle shadow d-flex align-items-start gap-2">
+                        <i class="bi bi-egg-fill fs-1"></i>
+                        <div class="flex-grow-1">
+                            <b>Proteine:</b> @nutritionGoal.Protein g
+                            <div class="progress mt-1" role="progressbar">
+                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Protein</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md mb-3">
+                <div class="card h-100">
+                    <div class="card-body bg-primary-subtle shadow d-flex align-items-start gap-2">
+                        <i class="bi bi-egg-fill fs-1"></i>
+                        <div class="flex-grow-1">
+                            <b>Fett:</b> @nutritionGoal.Fats g
+                            <div class="progress mt-1" role="progressbar">
+                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Fats</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-success shadow" @onclick="() => OpenModal(nutritionGoal)" data-bs-toggle="modal" data-bs-target="#edit-modal">
+                    Ernährungsziel bearbeiten
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit-NutritionGoal-Modal -->
+<div class="modal fade" id="edit-modal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fw-bold fs-5">
+                    Ernährungsziel bearbeiten
+                </h1>
+            </div>
+            <div class="modal-body">
+                <!-- EditForm bindet nun an das temporäre Bearbeitungsobjekt -->
+                <EditForm Model="EditingnutritionGoal" OnValidSubmit="EditNutritionGoal">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label class="form-label">Kalorien</label>
+                        <InputNumber @bind-Value="EditingnutritionGoal.Calories" class="form-control" min="0" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kohlenhydrate</label>
+                        <InputNumber @bind-Value="EditingnutritionGoal.Carbohydrates" class="form-control" min="0" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Proteine</label>
+                        <InputNumber @bind-Value="EditingnutritionGoal.Protein" class="form-control" min="0" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fett</label>
+                        <InputNumber @bind-Value="EditingnutritionGoal.Fats" class="form-control" min="0" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <button type="submit" class="btn btn-warning w-100">
+                                Bearbeiten
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal">Abbrechen</button>
+                        </div>
+                    </div>
+
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+<Toasts class="p-3" Messages="ToastService.Messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
+
+@code {
+    private NutritionGoal nutritionGoal { get; set; } = new();
+    private NutritionGoal EditingnutritionGoal { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        nutritionGoal = Context.NutritionGoals.First();
+    }
+
+    private void OpenModal(NutritionGoal nutritionGoalCopy)
+    {
+        // Create a temporary clone for editing
+        EditingnutritionGoal = new NutritionGoal
+        {
+            Id = nutritionGoalCopy.Id,
+            Calories = nutritionGoalCopy.Calories,
+            Carbohydrates = nutritionGoalCopy.Carbohydrates,
+            Protein = nutritionGoalCopy.Protein,
+            Fats = nutritionGoalCopy.Fats
+        };
+    }
+
+    private async Task EditNutritionGoal()
+    {
+        // Edit existing NutritionGoal
+        if (EditingnutritionGoal.Id != 0)
+        {
+            // Load the tracked entity from the database
+            var nutritionGoalFromDb = await Context.NutritionGoals.FindAsync(EditingnutritionGoal.Id);
+
+            if (nutritionGoalFromDb != null)
+            {
+                // Copy updated values
+                nutritionGoalFromDb.Calories = EditingnutritionGoal.Calories;
+                nutritionGoalFromDb.Carbohydrates = EditingnutritionGoal.Carbohydrates;
+                nutritionGoalFromDb.Protein = EditingnutritionGoal.Protein;
+                nutritionGoalFromDb.Fats = EditingnutritionGoal.Fats;
+
+                ToastService.ShowMessage(ToastType.Warning, "Ernährungsziel bearbeitet", "");
+
+                // Originalobjekt für die UI aktualisieren
+                nutritionGoal = nutritionGoalFromDb;
+            }
+
+            await Context.SaveChangesAsync();
+        }
+
+        await JS.InvokeVoidAsync("closeModal", "edit-modal");
+    }
+}
