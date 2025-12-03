@@ -15,11 +15,12 @@
             <div class="col-12 col-md mb-3">
                 <div class="card h-100">
                     <div class="card-body bg-success-subtle shadow d-flex align-items-start gap-2">
-                        <i class="bi bi-egg-fill fs-1"></i>
+                        <i class="bi bi-lightning-fill fs-1"></i>
                         <div class="flex-grow-1">
-                            <b>Kalorien:</b> @nutritionGoal.Calories kcal
+                            <b>Kalorien:</b> 
+                            <div>400/@NutritionGoalView.Calories kcal</div>
                             <div class="progress mt-1" role="progressbar">
-                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Calories</div>
+                                <div class="progress-bar bg-success" style="width: 25%"></div>
                             </div>
                         </div>
                     </div>
@@ -29,11 +30,12 @@
             <div class="col-12 col-md mb-3">
                 <div class="card h-100">
                     <div class="card-body bg-warning-subtle shadow d-flex align-items-start gap-2">
-                        <i class="bi bi-egg-fill fs-1"></i>
+                        <i class="bi bi-flower1 fs-1"></i>
                         <div class="flex-grow-1">
-                            <b>Kohlenhydrate:</b> @nutritionGoal.Carbohydrates g
+                            <b>Kohlenhydrate:</b>
+                            <div>12/@NutritionGoalView.Carbohydrates g</div>
                             <div class="progress mt-1" role="progressbar">
-                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Carbohydrates</div>
+                                <div class="progress-bar bg-warning" style="width: 25%"></div>
                             </div>
                         </div>
                     </div>
@@ -43,11 +45,12 @@
             <div class="col-12 col-md mb-3">
                 <div class="card h-100">
                     <div class="card-body bg-danger-subtle shadow d-flex align-items-start gap-2">
-                        <i class="bi bi-egg-fill fs-1"></i>
+                        <i class="bi bi-egg-fried fs-1"></i>
                         <div class="flex-grow-1">
-                            <b>Proteine:</b> @nutritionGoal.Protein g
+                            <b>Proteine:</b> 
+                            <div>30/@NutritionGoalView.Protein g</div>
                             <div class="progress mt-1" role="progressbar">
-                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Protein</div>
+                                <div class="progress-bar bg-danger" style="width: 25%"></div>
                             </div>
                         </div>
                     </div>
@@ -57,11 +60,12 @@
             <div class="col-12 col-md mb-3">
                 <div class="card h-100">
                     <div class="card-body bg-primary-subtle shadow d-flex align-items-start gap-2">
-                        <i class="bi bi-egg-fill fs-1"></i>
+                        <i class="bi bi-droplet-fill fs-1"></i>
                         <div class="flex-grow-1">
-                            <b>Fett:</b> @nutritionGoal.Fats g
+                            <b>Fett:</b> 
+                            <div>12/@NutritionGoalView.Fats g</div>
                             <div class="progress mt-1" role="progressbar">
-                                <div class="progress-bar" style="width: 25%">12/@nutritionGoal.Fats</div>
+                                <div class="progress-bar bg-primary" style="width: 25%"></div>
                             </div>
                         </div>
                     </div>
@@ -69,7 +73,7 @@
             </div>
 
             <div class="col-12">
-                <button class="btn btn-success shadow" @onclick="() => OpenModal(nutritionGoal)" data-bs-toggle="modal" data-bs-target="#edit-modal">
+                <button class="btn btn-warning shadow" @onclick="() => OpenModal(NutritionGoalView)" data-bs-toggle="modal" data-bs-target="#edit-modal">
                     Ernährungsziel bearbeiten
                 </button>
             </div>
@@ -129,15 +133,137 @@
     </div>
 </div>
 
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <h4 class="mb-3">Mahlzeitenerfassung</h4>
+
+        <!-- Prev-and-Next-buttons -->
+        <div class="row mb-4">
+            <div class="col-4 text-start">
+                <button class="btn btn-outline-primary w-100 shadow">
+                    <i class="bi bi-caret-left-fill"></i>
+                    Vorheriger Tag
+                </button>
+            </div>
+            <div class="col-4 text-center">
+                <span class="fw-bold fs-5">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</span>
+            </div>
+            <div class="col-4 text-end">
+                <button class="btn btn-outline-primary w-100 shadow">
+                    <i class="bi bi-caret-right-fill"></i>
+                    Nächster Tag
+                </button>
+            </div>
+        </div>
+
+        <!--Meals lists-->
+        <div class="row">
+            <div class="col">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Frühstück</strong>
+                        <button class="btn btn-sm btn-success">+</button>
+                    </div>
+                    <ol class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Banane</div>
+                                <div class="d-flex w-100">
+                                    <div class="pe-2 flex-grow-1">Kalorien: 100 Kcal</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Kohlenhydrate: 14g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Proteine: 1g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Fett: 3g</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Mittagessen</strong>
+                        <button class="btn btn-sm btn-success">+</button>
+                    </div>
+                    <ol class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Hähnchen mit Reis</div>
+                                <div class="d-flex w-100">
+                                    <div class="pe-2 flex-grow-1">Kalorien: 100 Kcal</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Kohlenhydrate: 14g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Proteine: 1g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Fett: 3g</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Abendessen</strong>
+                        <button class="btn btn-sm btn-success">+</button>
+                    </div>
+                    <ol class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Salat</div>
+                                <div class="d-flex w-100">
+                                    <div class="pe-2 flex-grow-1">Kalorien: 100 Kcal</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Kohlenhydrate: 14g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Proteine: 1g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Fett: 3g</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Zusätzliche Mahlzeiten</strong>
+                        <button class="btn btn-sm btn-success">+</button>
+                    </div>
+                    <ol class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Mantaplatte</div>
+                                <div class="d-flex w-100">
+                                    <div class="pe-2 flex-grow-1">Kalorien: 100 Kcal</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Kohlenhydrate: 14g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Proteine: 1g</div><div class="vr"></div>
+                                    <div class="px-2 flex-grow-1">Fett: 3g</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <Toasts class="p-3" Messages="ToastService.Messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.BottomCenter" />
 
 @code {
-    private NutritionGoal nutritionGoal { get; set; } = new();
+    private NutritionGoal NutritionGoalView { get; set; } = new();
     private NutritionGoal EditingnutritionGoal { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        nutritionGoal = Context.NutritionGoals.First();
+        NutritionGoalView = Context.NutritionGoals.First();
     }
 
     private void OpenModal(NutritionGoal nutritionGoalCopy)
@@ -171,8 +297,8 @@
 
                 ToastService.ShowMessage(ToastType.Warning, "Ernährungsziel bearbeitet", "");
 
-                // Originalobjekt für die UI aktualisieren
-                nutritionGoal = nutritionGoalFromDb;
+                // Update the view model
+                NutritionGoalView = nutritionGoalFromDb;
             }
 
             await Context.SaveChangesAsync();
