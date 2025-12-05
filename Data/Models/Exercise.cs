@@ -15,7 +15,6 @@ namespace FitnessPlaner.Data.Models
         [Required(ErrorMessage = "darf nicht kleiner als 0 sein")]
         public int Repetitions { get; set; }
         public string Notes { get; set; } = string.Empty;
-
         public ICollection<PlanExercise>? PlanExercises { get; set; }
     }
 }

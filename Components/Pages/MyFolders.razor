@@ -219,7 +219,34 @@
     {
         if (ViewFolder is not null)
         {
+            // Load plans associated with the folder
+            var folderPlans = await Context.FolderPlans
+                .Where(fp => fp.FolderId == ViewFolder.Id)
+                .Include(fp => fp.Plan)
+                .ThenInclude(p => p.PlanExercises)
+                .ThenInclude(pe => pe.Exercise)
+                .ToListAsync();
+
+            // Remove associated plans and their exercises
+            foreach (var fp in folderPlans)
+            {
+                var plan = fp.Plan;
+
+                // Remove Exercises
+                foreach (var pe in plan.PlanExercises)
+                {
+                    Context.Exercises.Remove(pe.Exercise);
+                }
+
+                // Remove PlanExercises
+                Context.PlanExercises.RemoveRange(plan.PlanExercises);
+
+                // Remove Plans
+                Context.Plans.Remove(plan);
+            }
+
             Context.Folders.Remove(ViewFolder);
+
             await Context.SaveChangesAsync();
         }
 

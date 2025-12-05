@@ -394,10 +394,25 @@
 
         if (existingPlan != null)
         {
-            // Remove FolderPlan mappings first
+            // Load all PlanExercises with Exercises
+            var planExercises = await Context.PlanExercises
+                .Where(pe => pe.PlanId == existingPlan.Id)
+                .Include(pe => pe.Exercise)
+                .ToListAsync();
+
+            // Remove Exercises first
+            foreach (var pe in planExercises)
+            {
+                Context.Exercises.Remove(pe.Exercise);
+            }
+
+            // Remove PlanExercise mappings
+            Context.PlanExercises.RemoveRange(planExercises);
+
+            // Remove FolderPlan mappings
             Context.FolderPlans.RemoveRange(existingPlan.FolderPlans);
 
-            // Then remove the plan itself
+            // Remove the plan itself
             Context.Plans.Remove(existingPlan);
 
             await Context.SaveChangesAsync();
