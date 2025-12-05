@@ -1,5 +1,6 @@
 using FitnessPlaner.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
@@ -10,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<PlanExercise> PlanExercises => Set<PlanExercise>();
     public DbSet<NutritionGoal> NutritionGoals => Set<NutritionGoal>();
+    public DbSet<FoodEntry> FoodEntries => Set<FoodEntry>();
 
     // Configure the model
     protected override void OnModelCreating(ModelBuilder builder)
@@ -23,5 +25,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Plan>().ToTable("plans");
         builder.Entity<PlanExercise>().ToTable("planexercises");
         builder.Entity<NutritionGoal>().ToTable("nutritiongoal");
+        builder.Entity<FoodEntry>().ToTable("foodentries");
     }
 }

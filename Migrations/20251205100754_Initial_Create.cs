@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FitnessPlaner.Migrations
 {
     /// <inheritdoc />
-    public partial class _Initial_Create : Migration
+    public partial class Initial_Create : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -51,6 +52,43 @@ namespace FitnessPlaner.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "foodentries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Name = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Calories = table.Column<int>(type: "int", nullable: false),
+                    Protein = table.Column<int>(type: "int", nullable: false),
+                    Carbohydrates = table.Column<int>(type: "int", nullable: false),
+                    Fats = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_foodentries", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "nutritiongoal",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Calories = table.Column<double>(type: "double", nullable: false),
+                    Protein = table.Column<double>(type: "double", nullable: false),
+                    Carbohydrates = table.Column<double>(type: "double", nullable: false),
+                    Fats = table.Column<double>(type: "double", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_nutritiongoal", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "plans",
                 columns: table => new
                 {
@@ -58,6 +96,7 @@ namespace FitnessPlaner.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Duration = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
@@ -147,6 +186,12 @@ namespace FitnessPlaner.Migrations
         {
             migrationBuilder.DropTable(
                 name: "folderplans");
+
+            migrationBuilder.DropTable(
+                name: "foodentries");
+
+            migrationBuilder.DropTable(
+                name: "nutritiongoal");
 
             migrationBuilder.DropTable(
                 name: "planexercises");
