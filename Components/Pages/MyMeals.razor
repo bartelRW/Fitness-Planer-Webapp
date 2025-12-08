@@ -6,111 +6,70 @@
 @inject ToastsService ToastService
 @inject IJSRuntime JS
 
+@{
+    var nutritionItems = new[]
+    {
+        new {
+        Name = "Kalorien",
+        Value = FoodEntrySum.Calories,
+        Goal = NutritionGoalView.Calories,
+        Icon = "bi-lightning-fill",
+        },
+        new {
+        Name = "Kohlenhydrate",
+        Value = FoodEntrySum.Carbohydrates,
+        Goal = NutritionGoalView.Carbohydrates,
+        Icon = "bi-flower1",
+        },
+        new {
+        Name = "Proteine",
+        Value = FoodEntrySum.Protein,
+        Goal = NutritionGoalView.Protein,
+        Icon = "bi-egg-fried",
+        },
+        new {
+        Name = "Fett",
+        Value = FoodEntrySum.Fats,
+        Goal = NutritionGoalView.Fats,
+        Icon = "bi-droplet-fill",
+        }
+    };
+}
+
 <h1>Meine Mahlzeiten</h1>
 
 <div class="card shadow mb-4">
     <div class="card-body">
-        <h4 class="mb-3">Tägliches Ernährungsziel</h4>
+        <h4 class="mb-3">Tägliches Nährwerteziel</h4>
         <div class="row">
-            <div class="col-12 col-md mb-3">
-                @{
-                    var statusCals = GetNutritionStatus(FoodEntrySum.Calories, NutritionGoalView.Calories);
-                }
-                <Tooltip Title="@statusCals.Message" Placement =" TooltipPlacement.Top">
-                    <div class="card h-100">
-                        <div class="card-body bg-@statusCals.Color-subtle shadow d-flex align-items-start gap-2">
-                            <i class="bi @statusCals.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
-                            <i class="bi bi-lightning-fill fs-1"></i>
-                            <div class="flex-grow-1">
-                                <b>Kalorien:</b>
-                                <div>@FoodEntrySum.Calories/@NutritionGoalView.Calories kcal</div>
-                                <div class="progress mt-1" role="progressbar">
-                                    <div class="progress-bar progress-bar-striped bg-@statusCals.Color"
-                                         style="width:@(Math.Round((FoodEntrySum.Calories * 100) / NutritionGoalView.Calories))%">
+            <div class="row">
+                @foreach (var item in nutritionItems)
+                {
+                    var status = GetNutritionStatus(item.Value, item.Goal);
+
+                    <div class="col-12 col-md mb-3">
+                        <Tooltip Title="@status.Message" Placement="TooltipPlacement.Top">
+                            <div class="card h-100">
+                                <div class="card-body bg-@status.Color-subtle shadow d-flex align-items-start gap-2">
+                                    <i class="bi @status.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
+                                    <i class="bi @item.Icon fs-1"></i>
+                                    <div class="flex-grow-1">
+                                        <b>@item.Name:</b>
+                                        <div>@item.Value/@item.Goal @(item.Name == "Kalorien" ? "kcal" : "g")</div>
+                                        <div class="progress mt-1" role="progressbar">
+                                            <div class="progress-bar progress-bar-striped bg-@status.Color"
+                                                 style="width:@(Math.Round((item.Value * 100) / item.Goal))%">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </Tooltip>
                     </div>
-                </Tooltip>
-            </div>
-
-            <div class="col-12 col-md mb-3">
-                @{
-                    var statusCarbs = GetNutritionStatus(FoodEntrySum.Carbohydrates, NutritionGoalView.Carbohydrates);
                 }
-                <Tooltip Title="@statusCarbs.Message" Placement =" TooltipPlacement.Top">
-                    <div class="card h-100">
-                        <div class="card-body bg-@statusCarbs.Color-subtle shadow d-flex align-items-start gap-2">
-                            <i class="bi @statusCarbs.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
-
-                            <i class="bi bi-flower1 fs-1"></i>
-                            <div class="flex-grow-1">
-                                <b>Kohlenhydrate:</b>
-                                <div>@FoodEntrySum.Carbohydrates/@NutritionGoalView.Carbohydrates g</div>
-                                <div class="progress mt-1" role="progressbar">
-                                    <div 
-                                        class="progress-bar progress-bar-striped bg-@statusCarbs.Color" 
-                                        style="width:@(Math.Round((FoodEntrySum.Carbohydrates * 100) / NutritionGoalView.Carbohydrates))%">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Tooltip>
             </div>
 
-            <div class="col-12 col-md mb-3">
-                @{
-                    var statusProtein = GetNutritionStatus(FoodEntrySum.Protein, NutritionGoalView.Protein);
-                }
-                <Tooltip Title="@statusProtein.Message" Placement =" TooltipPlacement.Top">
-                    <div class="card h-100">
-                        <div class="card-body bg-@statusProtein.Color-subtle shadow d-flex align-items-start gap-2">
-                            <i class="bi @statusProtein.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
-
-                            <i class="bi bi-egg-fried fs-1"></i>
-                            <div class="flex-grow-1">
-                                <b>Proteine:</b> 
-                                <div>@FoodEntrySum.Protein/@NutritionGoalView.Protein g</div>
-                                <div class="progress mt-1" role="progressbar">
-                                    <div 
-                                        class="progress-bar progress-bar-striped bg-@statusProtein.Color" 
-                                        style="width:@(Math.Round((FoodEntrySum.Protein * 100) / NutritionGoalView.Protein))%">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Tooltip>
-            </div>
-
-            <div class="col-12 col-md mb-3">
-                @{
-                    var statusFats = GetNutritionStatus(FoodEntrySum.Fats, NutritionGoalView.Fats);
-                }
-                <Tooltip Title="@statusFats.Message" Placement =" TooltipPlacement.Top">
-                    <div class="card h-100">
-                        <div class="card-body bg-@statusFats.Color-subtle shadow d-flex align-items-start gap-2">
-                            <i class="bi @statusFats.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
-
-                            <i class="bi bi-droplet-fill fs-1"></i>
-                            <div class="flex-grow-1">
-                                <b>Fett:</b> 
-                                <div>@FoodEntrySum.Fats/@NutritionGoalView.Fats g</div>
-                                <div class="progress mt-1" role="progressbar">
-                                    <div 
-                                        class="progress-bar progress-bar-striped bg-@statusFats.Color" 
-                                        style="width:@(Math.Round((FoodEntrySum.Fats * 100) / NutritionGoalView.Fats))%">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Tooltip>
-            </div>
-
-            <div class="col-12">
+            <div class="col-12 mt-3">
                 <button class="btn btn-warning shadow" @onclick="() => OpenNutrtionGoalModal(NutritionGoalView)" data-bs-toggle="modal" data-bs-target="#edit-modal">
                     <i class="bi bi-pencil-fill"></i>
                     Ernährungsziel bearbeiten
@@ -380,28 +339,28 @@
 
     private async Task AddFoodEntryAsync()
     {
+        // Add the new FoodEntry
         FoodEntry.Date = Date;
         Context.FoodEntries.Add(FoodEntry);
         await Context.SaveChangesAsync();
+
+        // UI update and message
         ToastService.ShowMessage(ToastType.Success, "Mahlzeit hinzugefügt", "");
         FoodEntry = new();
         await JS.InvokeVoidAsync("closeModal", "add-foodentry-modal");
         FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
-
-        // Update sums
         FoodEntrySum = UpdateSum(FoodEntries);
     }
 
     private async Task RemoveFoodEntryAsync(FoodEntry foodEntry)
     {
+        // Remove the FoodEntry
         Context.FoodEntries.Remove(foodEntry);
         await Context.SaveChangesAsync();
 
+        // UI update and message
         FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
-
-        // Update sums
         FoodEntrySum = UpdateSum(FoodEntries);
-
         ToastService.ShowMessage(ToastType.Danger, "Mahlzeit entfernt", "");
     }
 
