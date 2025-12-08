@@ -49,9 +49,11 @@
                             @foreach (var plan in Plans)
                             {
                                 <tr @key="plan.Id">
-                                    <td @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal" style="cursor:pointer">
-                                        <i class="bi bi-clipboard2-check-fill"></i>
-                                        @plan.Name
+                                    <td @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal">
+                                        <span class="btn">
+                                            <i class="bi bi-clipboard2-check-fill"></i>
+                                            @plan.Name
+                                        </span>
                                     </td>
                                     <td>@plan.Description</td>
                                     <td class="text-center">@plan.Duration</td>

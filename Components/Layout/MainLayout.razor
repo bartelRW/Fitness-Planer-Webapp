@@ -7,10 +7,8 @@
 
     <main>
         <div class="brand-border"></div>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">
-                <i class="bi bi-gear-fill fs.5"></i>
-            </a>
+        <div class="top-row px-4 @ChangeTopRow">
+            <ThemeSwitcher OnThemeChanged="OnThemeChanged" />
         </div>
 
         <article class="content px-4">
@@ -24,3 +22,19 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code{
+    private string ChangeTopRow { get; set; } = string.Empty;
+
+    private void OnThemeChanged(string themeName)
+    {
+        if(themeName == "dark")
+        {
+            ChangeTopRow = "bg-dark";
+        }
+        else
+        {
+            ChangeTopRow = "";
+        }
+    }
+}
