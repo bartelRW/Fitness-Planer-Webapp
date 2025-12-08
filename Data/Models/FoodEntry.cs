@@ -7,9 +7,9 @@ namespace FitnessPlaner.Data.Models
         public int Id { get; set; }
         public DateOnly Date { get; set; }
         public string Name { get; set; } = string.Empty;
-        public int Calories { get; set; }
-        public int Protein { get; set; }
-        public int Carbohydrates { get; set; }
-        public int Fats { get; set; }
+        public double Calories { get; set; }
+        public double Protein { get; set; }
+        public double Carbohydrates { get; set; }
+        public double Fats { get; set; }
     }
 }
