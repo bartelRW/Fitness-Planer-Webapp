@@ -1,5 +1,6 @@
 using FitnessPlaner.Components;
 using FitnessPlaner.Services;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,12 +14,15 @@ var connectionString = builder.Configuration.GetConnectionString("ConnectionStri
 // Register ApplicationDbContext with MySQL provider
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Add BlazorBootstrap services
+// BlazorBootstrap services
 builder.Services.AddBlazorBootstrap();
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-//Add Custom Services
+// Custom Services
 builder.Services.AddTransient<ToastsService>();
+
+// Session storage to keep session data
+builder.Services.AddScoped<ProtectedSessionStorage>();
 
 var app = builder.Build();
 

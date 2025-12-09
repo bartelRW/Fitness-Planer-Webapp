@@ -1,10 +1,12 @@
 ﻿@page "/mymeals"
-
-<PageTitle>Mahlzeiten</PageTitle>
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
 @inject ApplicationDbContext Context
 @inject ToastsService ToastService
 @inject IJSRuntime JS
+@inject ProtectedSessionStorage SessionStorage
+
+<PageTitle>Mahlzeiten</PageTitle>
 
 @{
     var nutritionItems = new[]
@@ -301,11 +303,29 @@
 
             NutritionGoalView = Context.NutritionGoals.First();
         }
+    }
 
-        FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // On first render, load the stored date from session storage
+        if (firstRender)
+        {
+            var stored = await SessionStorage.GetAsync<string>("Date");
 
-        // Update sums
-        FoodEntrySum = UpdateSum(FoodEntries);
+            if (stored.Success && DateOnly.TryParse(stored.Value, out var parsed))
+            {
+                Date = parsed;
+            }
+
+            // Load FoodEntries for the selected date
+            FoodEntries = await Context.FoodEntries
+                .Where(f => f.Date == Date)
+                .ToListAsync();
+
+            FoodEntrySum = UpdateSum(FoodEntries);
+
+            StateHasChanged();
+        }
     }
 
     private void OpenNutrtionGoalModal(NutritionGoal nutritionGoalCopy)
@@ -381,18 +401,21 @@
         }
 
         // Load FoodEntries for the new date
-        if (Date >= DateOnly.FromDateTime(DateTime.Now.AddYears(-1)))
+        if (Date >= DateOnly.FromDateTime(DateTime.Now.AddYears(-1)) && Date <= DateOnly.FromDateTime(DateTime.Now))
         {
             FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
         }
         else
         {
-            ToastService.ShowMessage(ToastType.Warning, "Datum kann nicht älter als ein Jahr sein", "");
+            ToastService.ShowMessage(ToastType.Warning, "Das Datum liegt außerhalb des gültigen Bereichs", "");
             Date = DateOnly.FromDateTime(DateTime.Now);
         }
 
         // Update sums
         FoodEntrySum = UpdateSum(FoodEntries);
+
+        // Store selected date in session storage
+        await SessionStorage.SetAsync("Date", Date);
     }
 
     private FoodEntry UpdateSum(List<FoodEntry> foodEntries)
