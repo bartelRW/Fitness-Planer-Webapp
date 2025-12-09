@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JSRuntime
+
+<!-- Set Width and Height and draw Chart on Canvas -->
+<div style="position:relative; height:400px; width:100%;">
+    <canvas id="@CanvasId"></canvas>
+</div>
+
+@code {
+    // Unique ID for the canvas element
+    [Parameter] public string CanvasId { get; set; } = $"chart_{Guid.NewGuid()}";
+    // Chart configuration object
+    [Parameter] public object? ChartConfig { get; set; }
+
+    // Inject JavaScript runtime for interop
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ChartConfig != null)
+        {
+            // Call JavaScript function to render the chart
+            await JSRuntime.InvokeVoidAsync("renderChart", CanvasId, ChartConfig);
+        }
+    }
+}
