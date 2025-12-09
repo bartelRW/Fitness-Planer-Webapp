@@ -10,28 +10,28 @@
     var nutritionItems = new[]
     {
         new {
-        Name = "Kalorien",
-        Value = FoodEntrySum.Calories,
-        Goal = NutritionGoalView.Calories,
-        Icon = "bi-lightning-fill",
+            Name = "Kalorien",
+            Value = FoodEntrySum.Calories,
+            Goal = NutritionGoalView.Calories,
+            Icon = "bi-lightning-fill",
         },
         new {
-        Name = "Kohlenhydrate",
-        Value = FoodEntrySum.Carbohydrates,
-        Goal = NutritionGoalView.Carbohydrates,
-        Icon = "bi-flower1",
+            Name = "Kohlenhydrate",
+            Value = FoodEntrySum.Carbohydrates,
+            Goal = NutritionGoalView.Carbohydrates,
+            Icon = "bi-flower1",
         },
         new {
-        Name = "Proteine",
-        Value = FoodEntrySum.Protein,
-        Goal = NutritionGoalView.Protein,
-        Icon = "bi-egg-fried",
+            Name = "Proteine",
+            Value = FoodEntrySum.Protein,
+            Goal = NutritionGoalView.Protein,
+            Icon = "bi-egg-fried",
         },
         new {
-        Name = "Fett",
-        Value = FoodEntrySum.Fats,
-        Goal = NutritionGoalView.Fats,
-        Icon = "bi-droplet-fill",
+            Name = "Fett",
+            Value = FoodEntrySum.Fats,
+            Goal = NutritionGoalView.Fats,
+            Icon = "bi-droplet-fill",
         }
     };
 }
@@ -40,7 +40,10 @@
 
 <div class="card shadow mb-4">
     <div class="card-body">
-        <h4 class="mb-3">Tägliches Nährwerteziel</h4>
+        <h4 class="mb-3"> 
+            Ernährungsziel -   
+            @Date.ToString("dddd, dd MMMM yyyy")
+        </h4>
         <div class="row">
             <div class="row">
                 @foreach (var item in nutritionItems)
@@ -74,6 +77,96 @@
                     <i class="bi bi-pencil-fill"></i>
                     Ernährungsziel bearbeiten
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <h4 class="mb-3">
+            Mahlzeitenerfassung
+        </h4>
+
+        <!-- Prev-and-Next-buttons -->
+        <div class="row mb-4">
+            <div class="col-4 text-start">
+                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(0)">
+                    <i class="bi bi-caret-left-fill"></i>
+                    Vorheriger Tag
+                </button>
+            </div>
+            <div class="col-4 text-center">
+                <InputDate 
+                    class="form-control px-4 text-center border-primary fw-bold" 
+                    @bind-Value="Date" 
+                    @onfocusout="() => ChangeDateAsync(null)" />
+            </div>
+            <div class="col-4 text-end">
+                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(1)" disabled="@(Date == DateOnly.FromDateTime(DateTime.Now) ? true : false)">
+                    <i class="bi bi-caret-right-fill"></i>
+                    Nächster Tag
+                </button>
+            </div>
+        </div>
+
+        <!--Meals lists-->
+        <div class="row">
+            <div class="col">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Meine Mahlzeiten</strong>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#add-foodentry-modal">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                    @if (FoodEntries is not null && FoodEntries.Count > 0)
+                    {
+                        <ol class="list-group list-group-flush">
+                            @foreach (var foodEntry in FoodEntries)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-start" @key="foodEntry.Id">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">@foodEntry.Name</div>
+                                        <div class="d-flex w-100">
+                                            <div class="pe-2 flex-grow-1">Kalorien: @foodEntry.Calories Kcal</div><div class="vr"></div>
+                                            <div class="px-2 flex-grow-1">Kohlenhydrate: @foodEntry.Carbohydrates g</div><div class="vr"></div>
+                                            <div class="px-2 flex-grow-1">Proteine: @foodEntry.Protein g</div><div class="vr"></div>
+                                            <div class="px-2 flex-grow-1">Fett: @foodEntry.Fats g</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm" @onclick="() => RemoveFoodEntryAsync(foodEntry)">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </li>
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light m-2" role="alert">
+                            Keine Mahlzeiten aufgezeichnet
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Gesamt</strong>
+                    </div>
+                    <div class="ms-2 me-auto p-2">
+                        <div class="d-flex w-100">
+                            <div class="pe-2 flex-grow-1">Kalorien: @FoodEntrySum.Calories Kcal</div><div class="vr"></div>
+                            <div class="px-2 flex-grow-1">Kohlenhydrate: @FoodEntrySum.Carbohydrates g</div><div class="vr"></div>
+                            <div class="px-2 flex-grow-1">Proteine: @FoodEntrySum.Protein g</div><div class="vr"></div>
+                            <div class="px-2 flex-grow-1">Fett: @FoodEntrySum.Fats g</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -131,91 +224,6 @@
     </div>
 </div>
 
-<div class="card shadow mb-4">
-    <div class="card-body">
-        <h4 class="mb-3">Mahlzeitenerfassung</h4>
-
-        <!-- Prev-and-Next-buttons -->
-        <div class="row mb-4">
-            <div class="col-4 text-start">
-                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(0)">
-                    <i class="bi bi-caret-left-fill"></i>
-                    Vorheriger Tag
-                </button>
-            </div>
-            <div class="col-4 text-center">
-                <span class="fw-bold fs-5">@Date.ToString("dddd, dd MMMM yyyy")</span>
-            </div>
-            <div class="col-4 text-end">
-                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(1)" disabled="@(Date == DateOnly.FromDateTime(DateTime.Now) ? true : false)">
-                    <i class="bi bi-caret-right-fill"></i>
-                    Nächster Tag
-                </button>
-            </div>
-        </div>
-
-        <!--Meals lists-->
-        <div class="row">
-            <div class="col">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <strong>Meine Mahlzeiten</strong>
-                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#add-foodentry-modal">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
-                    </div>
-                    @if (FoodEntries is not null && FoodEntries.Count > 0)
-                    {
-                        <ol class="list-group">
-                            @foreach (var foodEntry in FoodEntries)
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-start" @key="foodEntry.Id">
-                                    <div class="ms-2 me-auto">
-                                        <div class="fw-bold">@foodEntry.Name</div>
-                                        <div class="d-flex w-100">
-                                            <div class="pe-2 flex-grow-1">Kalorien: @foodEntry.Calories Kcal</div><div class="vr"></div>
-                                            <div class="px-2 flex-grow-1">Kohlenhydrate: @foodEntry.Carbohydrates g</div><div class="vr"></div>
-                                            <div class="px-2 flex-grow-1">Proteine: @foodEntry.Protein g</div><div class="vr"></div>
-                                            <div class="px-2 flex-grow-1">Fett: @foodEntry.Fats g</div>
-                                        </div>
-                                    </div>
-                                    <button class="btn btn-sm" @onclick="() => RemoveFoodEntryAsync(foodEntry)">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </li>
-                            }
-                        </ol>
-                    }
-                    else
-                    {
-                        <div class="alert alert-warning m-2" role="alert">
-                            Keine Mahlzeiten aufgezeichnet
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!--TODO: sum nutrition values-->
-        <div class="row">
-            <div class="col">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <strong>Gesamt</strong>
-                    </div>
-                    <div class="ms-2 me-auto p-2">
-                        <div class="d-flex w-100">
-                            <div class="pe-2 flex-grow-1">Kalorien: @FoodEntrySum.Calories Kcal</div><div class="vr"></div>
-                            <div class="px-2 flex-grow-1">Kohlenhydrate: @FoodEntrySum.Carbohydrates g</div><div class="vr"></div>
-                            <div class="px-2 flex-grow-1">Proteine: @FoodEntrySum.Protein g</div><div class="vr"></div>
-                            <div class="px-2 flex-grow-1">Fett: @FoodEntrySum.Fats g</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Add-FoodEntry-Modal -->
 <div class="modal fade" id="add-foodentry-modal" data-bs-backdrop="static" tabindex="-1">
@@ -364,20 +372,24 @@
         ToastService.ShowMessage(ToastType.Danger, "Mahlzeit entfernt", "");
     }
 
-    private async Task ChangeDateAsync(int direction)
+    private async Task ChangeDateAsync(int? direction)
     {
         // 0 = previous day, 1 = next day
-        if(direction == 0)
+        if (direction.HasValue)
         {
-            Date = Date.AddDays(-1);
-        }
-        else
-        {
-            Date = Date.AddDays(1);
+            Date = direction == 0 ? Date.AddDays(-1) : Date.AddDays(1);
         }
 
         // Load FoodEntries for the new date
-        FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
+        if (Date >= DateOnly.FromDateTime(DateTime.Now.AddYears(-1)))
+        {
+            FoodEntries = await Context.FoodEntries.Where(f => f.Date == Date).ToListAsync();
+        }
+        else
+        {
+            ToastService.ShowMessage(ToastType.Warning, "Datum kann nicht älter als ein Jahr sein", "");
+            Date = DateOnly.FromDateTime(DateTime.Now);
+        }
 
         // Update sums
         FoodEntrySum = UpdateSum(FoodEntries);
