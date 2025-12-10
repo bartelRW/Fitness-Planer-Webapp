@@ -296,13 +296,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if(Context.NutritionGoals.Count() <= 0)
-        {
-            Context.NutritionGoals.Add(new NutritionGoal());
-            await Context.SaveChangesAsync();
+        var nutritionGoal = await Context.NutritionGoals.FirstOrDefaultAsync();
 
-            NutritionGoalView = Context.NutritionGoals.First();
+        if (nutritionGoal == null)
+        {
+            // Create new NutritionGoal if it does not exist
+            nutritionGoal = new NutritionGoal();
+            Context.NutritionGoals.Add(nutritionGoal);
+            await Context.SaveChangesAsync();
         }
+
+        // Set ViewModel for UI
+        NutritionGoalView = nutritionGoal;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
