@@ -1,28 +1,95 @@
 ﻿@page "/"
 
 @using FitnessPlaner.Components.Pages.ChartComponents
-@inject ApplicationDbContext DbContext
+@inject ApplicationDbContext Context
 
 <PageTitle>Home</PageTitle>
 
 <h1>Übersicht</h1>
 
-<div class="row mb-4">
-    <div class="col">
-        <div class="card bg-light shadow">
+<div class="row">
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card shadow">
             <div class="card-body">
+                <div class="fw-bold text-center">Kalorien</div>
                 <div class="row">
                     <div class="col">
-                        @if (ChartData is not null && ChartData.Count > 0)
+                        @if (CaloriesPoints is not null && CaloriesPoints.Count > 0)
                         {
-                            <!-- Chartconfig-Component -->
-                            <CascadingValue Name="ChartData" Value="ChartData">
-                                <NutritionChart @key="UpdateChart" />
+                            <CascadingValue Name="CaloriesPoints" Value="CaloriesPoints">
+                                <CaloriesChart @key="CaloriesPoints" />
                             </CascadingValue>
                         }
                         else
                         {
-                            <div><i class="bi bi-database-fill-x"></i> No data found</div>
+                            <div><i class="bi bi-database-fill-x"></i> Es sind keine Einträge vorhanden. <a href="/mymeals">Füge eine Mahlzeit hinzu.</a></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="fw-bold text-center">Kohlenhydrate</div>
+                <div class="row">
+                    <div class="col">
+                        @if (CarbsPoints is not null && CarbsPoints.Count > 0)
+                        {
+                            <CascadingValue Name="CarbsPoints" Value="CarbsPoints">
+                                <CarbChart @key="CarbsPoints" />
+                            </CascadingValue>
+                        }
+                        else
+                        {
+                            <div><i class="bi bi-database-fill-x"></i> Es sind keine Einträge vorhanden. <a href="/mymeals">Füge eine Mahlzeit hinzu.</a></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="fw-bold text-center">Proteine</div>
+                <div class="row">
+                    <div class="col">
+                        @if (ProteinPoints is not null && ProteinPoints.Count > 0)
+                        {
+                            <CascadingValue Name="ProteinPoints" Value="ProteinPoints">
+                                <ProteinChart @key="ProteinPoints" />
+                            </CascadingValue>  
+                        }
+                        else
+                        {
+                            <div><i class="bi bi-database-fill-x"></i> Es sind keine Einträge vorhanden. <a href="/mymeals">Füge eine Mahlzeit hinzu.</a></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="fw-bold text-center">Fette</div>
+                <div class="row">
+                    <div class="col">
+                        @if (FatsPoints is not null && FatsPoints.Count > 0)
+                        {
+                            <CascadingValue Name="FatsPoints" Value="FatsPoints">
+                                <FatsChart @key="FatsPoints" />
+                            </CascadingValue>
+                        }
+                        else
+                        {
+                            <div><i class="bi bi-database-fill-x"></i> Es sind keine Einträge vorhanden. <a href="/mymeals">Füge eine Mahlzeit hinzu.</a></div>
                         }
                     </div>
                 </div>
@@ -32,30 +99,40 @@
 </div>
 
 @code {
-    private Timer? Timer;
-    private List<int> ChartData { get; set; } = new();
-    private bool UpdateChart { get; set; } = new();
+    private List<FoodEntry> FoodEntries { get; set; } = new();
+    private NutritionGoal NutritionGoal { get; set; } = new();
 
-    protected override void OnInitialized()
+    private List<ChartPoint> CaloriesPoints { get; set; } = new();
+    private List<ChartPoint> CarbsPoints { get; set; } = new();
+    private List<ChartPoint> FatsPoints { get; set; } = new();
+    private List<ChartPoint> ProteinPoints { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        // Initialize the timer to update chart data every 3 seconds
-        Timer = new(
-            e =>
-            {
-                InvokeAsync(() =>
-                {
-                    // Generate random data for the chart
-                    ChartData = Enumerable.Range(1, 20).Select(_ => Random.Shared.Next(10, 100)).ToList();
-                    //Force Chartcomponent to reload
-                    UpdateChart = !UpdateChart;
-                    StateHasChanged();
-                });
-            },
-            null,
-            TimeSpan.Zero,
-            TimeSpan.FromSeconds(3)
-        );
-    }
+        // Load aggregated FoodEntries from the DB
+        FoodEntries = await Context.FoodEntries
+        .GroupBy(fe => fe.Date)
+        .Select(g => new FoodEntry
+        {
+            Date = g.Key,
+            Name = "Total",
+            Calories = g.Sum(fe => fe.Calories),
+            Protein = g.Sum(fe => fe.Protein),
+            Carbohydrates = g.Sum(fe => fe.Carbohydrates),
+            Fats = g.Sum(fe => fe.Fats)
+        })
+        .OrderBy(fe => fe.Date)
+        .ToListAsync();
 
-    public void Dispose() => Timer?.Dispose();
+        //FoodEntries = new();
+
+        // Load Nutrition Goals
+        NutritionGoal = await Context.NutritionGoals.FirstOrDefaultAsync() ?? new NutritionGoal();
+
+        // Create ChartPoints directly from FoodEntries
+        CaloriesPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Calories, NutritionGoal = NutritionGoal.Calories }).ToList();
+        CarbsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Carbohydrates, NutritionGoal = NutritionGoal.Carbohydrates }).ToList();
+        FatsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Fats, NutritionGoal = NutritionGoal.Fats }).ToList();
+        ProteinPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Protein, NutritionGoal = NutritionGoal.Protein }).ToList();
+    }
 }

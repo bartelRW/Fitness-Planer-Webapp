@@ -1,0 +1,94 @@
+﻿<!-- General Chart-Component to load individual charts -->
+<ChartComponent CanvasId="FatsChart" ChartConfig="@ChartConfig" />
+
+@code {
+    //Get Data from main component
+    [CascadingParameter(Name = "FatsPoints")]
+    private List<ChartPoint>? FatsPoints { get; set; } = new();
+
+    private object? ChartConfig { get; set; }
+
+    // Create Chart Config
+    protected override void OnInitialized()
+    {
+        if (FatsPoints is not null && FatsPoints.Count > 0)
+        {
+            // Generate labels based on current time for each data point
+            var labels = FatsPoints.Select(fp => fp.Date.ToString("dd.MM")).ToList();
+            var fats = FatsPoints.Select(fp => fp.Value).ToList();
+            var nutritionGoalFats = FatsPoints.Select(fp => fp.NutritionGoal).ToList();
+
+            ChartConfig = new
+            {
+                data = new
+                {
+                    labels = labels,
+                    datasets = new object[]
+                    {
+                        new {
+                             type = "bar",
+                            label = "Fette",
+                            data = fats,
+                            backgroundColor = "rgba(255, 140, 66, 0.6)",
+                            borderColor =  "#a2d208",
+                        },
+                        new {
+                            type = "line",
+                            label = "Fetteziel",
+                            data = nutritionGoalFats,
+                            backgroundColor = "rgba(255, 0, 0, 0.6)",
+                            borderColor = "rgba(255, 0, 0, 0.6)",
+                        },
+                    }
+                },
+                options = new
+                {
+                    responsive = true,
+                    maintainAspectRatio = false,
+                    animation = false,
+
+                    plugins = new
+                    {
+                        legend = new
+                        {
+                            display = false,
+                        },
+                    },
+
+                    scales = new
+                    {
+                        x = new
+                        {
+                            grid = new
+                            {
+                                display = true,
+                            },
+                        },
+                        y = new
+                        {
+                            beginAtZero = true,
+                            title = new
+                            {
+                                padding = 0,
+                                display = true,
+                            }
+                        }
+                    },
+
+                    Interaction = new
+                    {
+                        mode = "index",
+                        axis = "x",
+                        intersect = false,
+                    },
+
+                    hover = new
+                    {
+                        mode = "index",
+                        intersect = false,
+                    }
+                }
+            };
+        }
+    }
+}

@@ -1,37 +1,42 @@
 ﻿<!-- General Chart-Component to load individual charts -->
-<ChartComponent CanvasId="NutrititonChart" ChartConfig="@ChartConfig" />
+<ChartComponent CanvasId="CarbChart" ChartConfig="@ChartConfig" />
 
 @code {
     //Get Data from main component
-    [CascadingParameter(Name = "ChartData")]
-    private List<int>? ChartData { get; set; } = new();
+    [CascadingParameter(Name = "CarbsPoints")]
+    private List<ChartPoint>? CarbsPoints { get; set; } = new();
 
     private object? ChartConfig { get; set; }
 
     // Create Chart Config
     protected override void OnInitialized()
     {
-        if (ChartData is not null && ChartData.Count > 0)
+        if (CarbsPoints is not null && CarbsPoints.Count > 0)
         {
             // Generate labels based on current time for each data point
-            var labels = ChartData.Select(cd => string.Format("{0:dd.MM.yy HH:mm}", DateTime.Now)).ToList();
-            var data = ChartData;
+            var labels = CarbsPoints.Select(cp => cp.Date.ToString("dd.MM")).ToList();
+            var carbohydrates = CarbsPoints.Select(cp => cp.Value).ToList();
+            var nutritionGoalCarbs = CarbsPoints.Select(cp => cp.NutritionGoal).ToList();
 
             ChartConfig = new
             {
-                type = "line",
                 data = new
                 {
                     labels = labels,
                     datasets = new object[]
                     {
                         new {
-                            label = "value",
-                            data = data,
-                            radius = 0,
-                            backgroundColor = "rgba(162, 210, 8, 0.6)",
-                            borderColor =  "#a2d208",
-                            fill = false,
+                            type = "bar",
+                            label = "Kohlenhydrate",
+                            data = carbohydrates,
+                            backgroundColor = "rgba(78, 168, 222, 0.6)",
+                        },
+                        new {
+                            type = "line",
+                            label = "Kohlenhydrateziel",
+                            data = nutritionGoalCarbs,
+                            backgroundColor = "rgba(255, 0, 0, 0.6)",
+                            borderColor = "rgba(255, 0, 0, 0.6)",
                         },
                     }
                 },
@@ -47,30 +52,6 @@
                         {
                             display = false,
                         },
-
-                        zoom = new
-                        {
-                            zoom = new
-                            {
-                                wheel = new
-                                {
-                                    enabled = true,
-                                },
-                                pinch = new
-                                {
-                                    enabled = true,
-                                },
-                                drag = new
-                                {
-                                    enabled = true,
-                                },
-                                pan = new
-                                {
-                                    enabled = true,
-                                },
-                                mode = "x",
-                            }
-                        }
                     },
 
                     scales = new
@@ -79,7 +60,7 @@
                         {
                             grid = new
                             {
-                                display = false,
+                                display = true,
                             },
                         },
                         y = new
