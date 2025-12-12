@@ -58,7 +58,7 @@
                                     <td>@plan.Description</td>
                                     <td class="text-center">@plan.Duration</td>
                                     <td class="text-end">
-                                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                        <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-primary" @onclick="() => SelectPlanAsync(plan)" data-bs-toggle="modal" data-bs-target="#exercise-modal">
                                                 <i class="bi bi-person-arms-up"></i>
                                             </button>
@@ -215,6 +215,9 @@
                     <i class="bi bi-plus-lg"></i>
                     <i class="bi bi-person-arms-up"></i>
                     Übung hinzufügen
+                </button>
+                <button class="btn btn-lg btn-@(Plan.Pinned ? "secondary" : "outline-secondary") shadow" @onclick="PinPlanAsync">
+                    <i class="bi bi-pin-angle-fill"></i>
                 </button>
             </div>
         </div>
@@ -428,6 +431,28 @@
         Plan = new();
 
         ToastService.ShowMessage(ToastType.Danger, "Trainingsplan gelöscht", "");
+    }
+
+    private async Task PinPlanAsync()
+    {
+        if (Plan.Id == 0) return;
+        // Load tracked entity from DB
+        var existingPlan = await Context.Plans.FindAsync(Plan.Id);
+        if (existingPlan is not null)
+        {
+            // Unpin other plans
+            var pinnedPlans = await Context.Plans.Where(p => p.Pinned).ToListAsync();
+            foreach(var pinnedPlan in pinnedPlans)
+            {
+                if (pinnedPlan.Id != existingPlan.Id)
+                    pinnedPlan.Pinned = false;
+            }
+
+            existingPlan.Pinned = !existingPlan.Pinned;
+            await Context.SaveChangesAsync();
+            Plan.Pinned = existingPlan.Pinned;
+            ToastService.ShowMessage(ToastType.Primary, existingPlan.Pinned ? "Trainingsplan angeheftet" : "Trainingsplan gelöst", "");
+        }
     }
 
     private async Task DownloadCSVAsync(Plan plan)

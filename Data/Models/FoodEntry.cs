@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FitnessPlaner.Data.Models
+﻿namespace FitnessPlaner.Data.Models
 {
     public class FoodEntry
     {
