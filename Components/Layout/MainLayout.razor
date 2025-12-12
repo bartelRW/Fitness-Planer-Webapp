@@ -1,13 +1,19 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar shadow-lg brand-sidebar">
+    <div class="sidebar shadow-lg brand-sidebar@(ToggleBrandTheme.SideBar)">
+        <div class="brand-background@(ToggleBrandTheme.Brand) px-4 navbar navbar-dark">
+            <a class="navbar-brand d-flex align-items-center" href="">
+                <img src="/img/logo.png" class="img-fluid me-2" style="height: 30px; width: 30px" alt="fitness-planer-logo">
+                <span class="fs-6 fw-bold">Mein Fitness Planer</span>
+            </a>
+        </div>
         <NavMenu />
     </div>
 
     <main>
-        <div class="brand-border"></div>
-        <div class="top-row px-4 @ChangeTopRow">
+        <div class="brand-border@(ToggleBrandTheme.BrandBorder)"></div>
+        <div class="sticky-top top-row px-4 @ToggleBrandTheme.TopRow">
             <ThemeSwitcher OnThemeChanged="OnThemeChanged" Position="DropdownMenuPosition.End" />
         </div>
 
@@ -24,17 +30,23 @@
 </div>
 
 @code{
-    private string ChangeTopRow { get; set; } = string.Empty;
+    private BrandTheme ToggleBrandTheme { get; set; } = new();
 
     private void OnThemeChanged(string themeName)
     {
         if(themeName == "dark")
         {
-            ChangeTopRow = "bg-dark";
+            ToggleBrandTheme = new()
+            {
+                TopRow = "bg-dark",
+                SideBar = "-dark",
+                Brand = "-dark",
+                BrandBorder = "-dark"
+            };
         }
         else
         {
-            ChangeTopRow = "";
+            ToggleBrandTheme = new();
         }
     }
 }

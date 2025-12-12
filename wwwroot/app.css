@@ -66,17 +66,39 @@ h1:focus {
     left: 0;
     right: 0;
     background-color: #0757a8;
-    z-index: 1020;
+    z-index: 100;
     background: #0757a8;
     background: -moz-linear-gradient(left, #0757a8 30%, #a2d208 100%);
     background: -webkit-linear-gradient(left, #0757a8 30%,#a2d208 100%);
     background: linear-gradient(to right, #0757a8 30%,#a2d208 100%);
 }
 
+.brand-border-dark {
+    position: fixed;
+    height: 5px;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #2c3e50;
+    z-index: 1020;
+    background: #2c3e50;
+    background: -moz-linear-gradient(left, #2c3e50 30%, #16a085 100%);
+    background: -webkit-linear-gradient(left, #2c3e50 30%, #16a085 100%);
+    background: linear-gradient(to right, #2c3e50 30%, #16a085 100%);
+}
+
 .brand-sidebar {
     background: linear-gradient(to bottom, #0757a8 30%,#a2d208 100%) !important;
 }
 
+.brand-sidebar-dark {
+    background: linear-gradient(to bottom, #2c3e50 30%, #16a085 100%) !important;
+}
+
 .brand-background {
     background-color: #064a86;
+}
+
+.brand-background-dark {
+    background-color: #1b2733;
 }
