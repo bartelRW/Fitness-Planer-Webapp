@@ -90,7 +90,7 @@
                     {
                         <div class="alert alert-light" role="alert">
                             <h3>Keine Mahlzeiten eingetragen!</h3>
-                            <p>Tragen sie ihre erste Mahlzeit für heute ein</p>
+                            <p>Tragen Sie Ihre erste Mahlzeit für heute ein</p>
                         </div>
                     }
                 </div>
@@ -135,7 +135,7 @@
                     {
                         <div class="alert alert-light" role="alert">
                             <h3>Kein Traingingsplan angeheftet!</h3>
-                            <p>Heften sie einen Trainingsplan an, um ein Überblick über ihren aktuellen Plan zu erhalten</p>
+                            <p>Heften Sie einen Trainingsplan an, um ein Überblick über Ihren aktuellen Plan zu erhalten</p>
                         </div>
                     }
                 </div>
@@ -257,20 +257,7 @@
         }
 
         // Load aggregated FoodEntries from the DB
-        FoodEntries = await Context.FoodEntries
-            .Where(fe => fe.Date >= FilterDate)
-            .GroupBy(fe => fe.Date)
-            .Select(g => new FoodEntry
-            {
-                Date = g.Key,
-                Name = "Total",
-                Calories = g.Sum(fe => fe.Calories),
-                Protein = g.Sum(fe => fe.Protein),
-                Carbohydrates = g.Sum(fe => fe.Carbohydrates),
-                Fats = g.Sum(fe => fe.Fats)
-            })
-            .OrderBy(fe => fe.Date)
-            .ToListAsync();
+        FoodEntries = await GetFoodEntriesSumByDateAsync(FilterDate);
 
         // Load Nutrition Goals
         NutritionGoal = await Context.NutritionGoals.FirstOrDefaultAsync() ?? new NutritionGoal();
@@ -284,14 +271,19 @@
 
     private async Task FilterFoodEntriesAsync(DateOnly selectedDate)
     {
-        FilterDate = selectedDate;
+        FoodEntries = await GetFoodEntriesSumByDateAsync(selectedDate);
 
-        var query = Context.FoodEntries.AsQueryable();
+        // Update ChartPoints
+        CaloriesPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Calories, NutritionGoal = NutritionGoal.Calories }).ToList();
+        CarbsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Carbohydrates, NutritionGoal = NutritionGoal.Carbohydrates }).ToList();
+        FatsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Fats, NutritionGoal = NutritionGoal.Fats }).ToList();
+        ProteinPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Protein, NutritionGoal = NutritionGoal.Protein }).ToList();
+    }
 
-        if (FilterDate != DateOnly.FromDateTime(DateTime.MinValue))
-            query = query.Where(fe => fe.Date >= FilterDate);
-
-        FoodEntries = await query
+    private async Task<List<FoodEntry>> GetFoodEntriesSumByDateAsync(DateOnly date)
+    {
+        return await Context.FoodEntries
+            .Where(fe => fe.Date >= date)
             .GroupBy(fe => fe.Date)
             .Select(g => new FoodEntry
             {
@@ -304,11 +296,5 @@
             })
             .OrderBy(fe => fe.Date)
             .ToListAsync();
-
-        // Update ChartPoints
-        CaloriesPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Calories, NutritionGoal = NutritionGoal.Calories }).ToList();
-        CarbsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Carbohydrates, NutritionGoal = NutritionGoal.Carbohydrates }).ToList();
-        FatsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Fats, NutritionGoal = NutritionGoal.Fats }).ToList();
-        ProteinPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Protein, NutritionGoal = NutritionGoal.Protein }).ToList();
     }
 }
