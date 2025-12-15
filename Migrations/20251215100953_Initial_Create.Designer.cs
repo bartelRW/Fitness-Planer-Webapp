@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FitnessPlaner.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251205100754_Initial_Create")]
+    [Migration("20251215100953_Initial_Create")]
     partial class Initial_Create
     {
         /// <inheritdoc />
@@ -103,24 +103,24 @@ namespace FitnessPlaner.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Calories")
-                        .HasColumnType("int");
+                    b.Property<double>("Calories")
+                        .HasColumnType("double");
 
-                    b.Property<int>("Carbohydrates")
-                        .HasColumnType("int");
+                    b.Property<double>("Carbohydrates")
+                        .HasColumnType("double");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<int>("Fats")
-                        .HasColumnType("int");
+                    b.Property<double>("Fats")
+                        .HasColumnType("double");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("Protein")
-                        .HasColumnType("int");
+                    b.Property<double>("Protein")
+                        .HasColumnType("double");
 
                     b.HasKey("Id");
 
@@ -170,6 +170,9 @@ namespace FitnessPlaner.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("Pinned")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 

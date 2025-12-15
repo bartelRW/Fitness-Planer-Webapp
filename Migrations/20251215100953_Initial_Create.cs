@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -59,10 +60,10 @@ namespace FitnessPlaner.Migrations
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Name = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Calories = table.Column<int>(type: "int", nullable: false),
-                    Protein = table.Column<int>(type: "int", nullable: false),
-                    Carbohydrates = table.Column<int>(type: "int", nullable: false),
-                    Fats = table.Column<int>(type: "int", nullable: false)
+                    Calories = table.Column<double>(type: "double", nullable: false),
+                    Protein = table.Column<double>(type: "double", nullable: false),
+                    Carbohydrates = table.Column<double>(type: "double", nullable: false),
+                    Fats = table.Column<double>(type: "double", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,7 +98,8 @@ namespace FitnessPlaner.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Duration = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Pinned = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
                 {
