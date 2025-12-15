@@ -15,7 +15,7 @@
 
     <main>
         <div class="brand-border@(ToggleBrandTheme.BrandBorder)"></div>
-        <div class="sticky-top top-row px-4 @ToggleBrandTheme.TopRow">
+        <div class="sticky-top top-row px-4 z-3 @ToggleBrandTheme.TopRow">
             <ThemeSwitcher OnThemeChanged="OnThemeChanged" Position="DropdownMenuPosition.End" />
         </div>
 
@@ -64,7 +64,7 @@
         {
             ToggleBrandTheme = new()
             {
-                TopRow = "bg-dark",
+                TopRow = "bg-dark border-bottom border-secondary-subtle",
                 SideBar = "-dark",
                 Brand = "-dark",
                 BrandBorder = "-dark"

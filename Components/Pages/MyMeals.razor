@@ -53,7 +53,7 @@
                     var status = GetNutritionStatus(item.Value, item.Goal);
 
                     <div class="col-12 col-md mb-3">
-                        <Tooltip Title="@status.Message" Placement="TooltipPlacement.Top">
+                        <Tooltip Title="@status.Message" Color="@status.TooltipColor"  Placement="TooltipPlacement.Bottom">
                             <div class="card h-100">
                                 <div class="card-body bg-@status.Color-subtle shadow d-flex align-items-start gap-2">
                                     <i class="bi @status.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
@@ -447,24 +447,28 @@
         if (total < goal)  // Below target
         {
             status.Color = "primary";
+            status.TooltipColor = TooltipColor.Primary;
             status.Icon = "bi-info-circle-fill";
             status.Message = "Du hast dein Tagesziel noch nicht erreicht";
         }
         else if (total == goal || diffPercent <= 0.10) // Exactly on or slightly above target
         {
             status.Color = "success";
+            status.TooltipColor = TooltipColor.Success;
             status.Icon = "bi-star-fill";
-            status.Message = "Du hast dein Tagesziel erreicht!";
+            status.Message = "Info: Du hast dein Tagesziel erreicht!";
         }
         else if (diffPercent <= 0.30) // Moderately above (10–30%)
         {
             status.Color = "warning";
+            status.TooltipColor = TooltipColor.Warning;
             status.Icon = "bi-exclamation-circle-fill";
             status.Message = "Warnung: Du bist leicht über deinem Tagesziel";
         }
         else if (diffPercent <= 0.50)  // Strongly above (30–50%)
         {
             status.Color = "danger";
+            status.TooltipColor = TooltipColor.Danger;
             status.Icon = "bi-exclamation-triangle-fill";
             status.Message = "Achtung: Du hast dein Tagesziel stark überschritten";
         }
@@ -473,6 +477,7 @@
         else
         {
             status.Color = "danger";
+            status.TooltipColor = TooltipColor.Danger;
             status.Icon = "bi-exclamation-octagon-fill";
             status.Message = "Achtung: Du hast dein Tagesziel extem stark überschritten";
         }
