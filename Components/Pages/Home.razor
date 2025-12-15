@@ -8,6 +8,36 @@
 <h1>Übersicht</h1>
 
 <div class="row">
+    <div class="col mb-4 mt-2">
+        <div class="btn-group shadow" role="group">
+            <input type="radio" class="btn-check" name="btnradio" id="btn-radio-1" autocomplete="off" checked>
+            <label 
+                value="@DateOnly.FromDateTime(DateTime.Now.AddMonths(-1))" 
+                class="btn btn-outline-primary" 
+                @onclick="() => FilterFoodEntriesAsync(DateOnly.FromDateTime(DateTime.Now.AddMonths(-1)))" 
+                for="btn-radio-1">1 Monat
+            </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btn-radio-2" autocomplete="off">
+            <label 
+                value="@DateOnly.FromDateTime(DateTime.Now.AddMonths(-3))" 
+                class="btn btn-outline-primary" 
+                @onclick="() => FilterFoodEntriesAsync(DateOnly.FromDateTime(DateTime.Now.AddMonths(-3)))" 
+                for="btn-radio-2">3 Monate
+            </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btn-radio-3" autocomplete="off">
+            <label 
+                value="@DateOnly.FromDateTime(DateTime.Now.AddMonths(-6))" 
+                class="btn btn-outline-primary" 
+                @onclick="() => FilterFoodEntriesAsync(DateOnly.FromDateTime(DateTime.Now.AddMonths(-6)))" 
+                for="btn-radio-3">6 Monate
+            </label>
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-12 col-md-6 mb-4">
         <a href="/mymeals" class="text-decoration-none">
             <div class="card shadow h-100">
@@ -73,7 +103,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-center position-relative fw-bold p-2">
                         <i class="bi bi-pin-angle-fill position-absolute start-0 ms-2"></i>
-                       Trainingsplan - @PinnedPlan.Name
+                        Trainingsplan @(PinnedPlan.Name ?? $"- {PinnedPlan.Name}")
                     </div>
                     @if (Exercises is not null && Exercises.Count > 0)
                     {
@@ -99,6 +129,13 @@
                                 }
                                 </tbody>
                             </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light" role="alert">
+                            <h3>Kein Traingingsplan angeheftet!</h3>
+                            <p>Heften sie einen Trainingsplan an, um ein Überblick über ihren aktuellen Plan zu erhalten</p>
                         </div>
                     }
                 </div>
@@ -196,6 +233,7 @@
     private List<ChartPoint> ProteinPoints { get; set; } = new();
 
     private DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly FilterDate { get; set; } = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
 
     protected override async Task OnInitializedAsync()
     {
@@ -220,6 +258,7 @@
 
         // Load aggregated FoodEntries from the DB
         FoodEntries = await Context.FoodEntries
+            .Where(fe => fe.Date >= FilterDate)
             .GroupBy(fe => fe.Date)
             .Select(g => new FoodEntry
             {
@@ -233,12 +272,40 @@
             .OrderBy(fe => fe.Date)
             .ToListAsync();
 
-        //FoodEntries = new();
-
         // Load Nutrition Goals
         NutritionGoal = await Context.NutritionGoals.FirstOrDefaultAsync() ?? new NutritionGoal();
 
         // Create ChartPoints directly from FoodEntries
+        CaloriesPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Calories, NutritionGoal = NutritionGoal.Calories }).ToList();
+        CarbsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Carbohydrates, NutritionGoal = NutritionGoal.Carbohydrates }).ToList();
+        FatsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Fats, NutritionGoal = NutritionGoal.Fats }).ToList();
+        ProteinPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Protein, NutritionGoal = NutritionGoal.Protein }).ToList();
+    }
+
+    private async Task FilterFoodEntriesAsync(DateOnly selectedDate)
+    {
+
+        FilterDate = selectedDate;
+        var query = Context.FoodEntries.AsQueryable();
+
+        if (FilterDate != DateOnly.FromDateTime(DateTime.MinValue))
+            query = query.Where(fe => fe.Date >= FilterDate);
+
+        FoodEntries = await query
+            .GroupBy(fe => fe.Date)
+            .Select(g => new FoodEntry
+            {
+                Date = g.Key,
+                Name = "Total",
+                Calories = g.Sum(fe => fe.Calories),
+                Protein = g.Sum(fe => fe.Protein),
+                Carbohydrates = g.Sum(fe => fe.Carbohydrates),
+                Fats = g.Sum(fe => fe.Fats)
+            })
+            .OrderBy(fe => fe.Date)
+            .ToListAsync();
+
+        // Update ChartPoints
         CaloriesPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Calories, NutritionGoal = NutritionGoal.Calories }).ToList();
         CarbsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Carbohydrates, NutritionGoal = NutritionGoal.Carbohydrates }).ToList();
         FatsPoints = FoodEntries.Select(d => new ChartPoint { Date = d.Date, Value = d.Fats, NutritionGoal = NutritionGoal.Fats }).ToList();
