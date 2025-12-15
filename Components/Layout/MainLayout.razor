@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@inject IJSRuntime JS
+
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar shadow-lg brand-sidebar@(ToggleBrandTheme.SideBar)">
@@ -29,12 +31,36 @@
     <span class="dismiss">🗙</span>
 </div>
 
-@code{
+@code {
     private BrandTheme ToggleBrandTheme { get; set; } = new();
+    private bool IsInitialized;
 
-    private void OnThemeChanged(string themeName)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(themeName == "dark")
+        if (firstRender && !IsInitialized)
+        {
+            IsInitialized = true;
+            
+            // Load theme from LocalStorage
+            var savedTheme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            if (!string.IsNullOrEmpty(savedTheme))
+            {
+                ApplyTheme(savedTheme);
+            }
+        }
+    }
+
+    private async Task OnThemeChanged(string themeName)
+    {
+        ApplyTheme(themeName);
+        
+        // Save theme to LocalStorage
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", themeName);
+    }
+
+    private void ApplyTheme(string themeName)
+    {
+        if (themeName == "dark")
         {
             ToggleBrandTheme = new()
             {
@@ -48,5 +74,6 @@
         {
             ToggleBrandTheme = new();
         }
+        StateHasChanged();
     }
 }

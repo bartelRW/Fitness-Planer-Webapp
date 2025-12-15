@@ -284,8 +284,8 @@
 
     private async Task FilterFoodEntriesAsync(DateOnly selectedDate)
     {
-
         FilterDate = selectedDate;
+
         var query = Context.FoodEntries.AsQueryable();
 
         if (FilterDate != DateOnly.FromDateTime(DateTime.MinValue))
