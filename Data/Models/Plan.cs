@@ -8,7 +8,7 @@
         public string Description { get; set; } = string.Empty;
         public bool Pinned { get; set; } = false;
 
-        public ICollection<FolderPlan>? FolderPlans { get; set; }
-        public ICollection<PlanExercise>? PlanExercises { get; set; }
+        public ICollection<FolderPlan>? FolderPlans { get; set; } = [];
+        public ICollection<PlanExercise>? PlanExercises { get; set; } = [];
     }
 }
