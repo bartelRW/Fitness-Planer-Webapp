@@ -47,33 +47,29 @@
             @Date.ToString("dddd, dd MMMM yyyy")
         </h4>
         <div class="row">
-            <div class="row">
-                @foreach (var item in nutritionItems)
-                {
-                    var status = GetNutritionStatus(item.Value, item.Goal);
-
-                    <div class="col-12 col-md mb-3">
-                        <Tooltip Title="@status.Message" Color="@status.TooltipColor"  Placement="TooltipPlacement.Bottom">
-                            <div class="card h-100">
-                                <div class="card-body bg-@status.Color-subtle shadow d-flex align-items-start gap-2">
-                                    <i class="bi @status.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
-                                    <i class="bi @item.Icon fs-1"></i>
-                                    <div class="flex-grow-1">
-                                        <b>@item.Name:</b>
-                                        <div>@item.Value/@item.Goal @(item.Name == "Kalorien" ? "kcal" : "g")</div>
-                                        <div class="progress mt-1" role="progressbar">
-                                            <div class="progress-bar progress-bar-striped bg-@status.Color"
-                                                 style="width:@(Math.Round((item.Value * 100) / item.Goal))%">
-                                            </div>
+            @foreach (var item in nutritionItems)
+            {
+                var status = GetNutritionStatus(item.Value, item.Goal);
+                <div class="col-12 col-md mb-3">
+                    <Tooltip Title="@status.Message" Color="@status.TooltipColor"  Placement="TooltipPlacement.Bottom">
+                        <div class="card h-100">
+                            <div class="card-body bg-@status.Color-subtle shadow d-flex align-items-start gap-2">
+                                <i class="bi @status.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
+                                <i class="bi @item.Icon fs-1"></i>
+                                <div class="flex-grow-1">
+                                    <b>@item.Name:</b>
+                                    <div>@item.Value/@item.Goal @(item.Name == "Kalorien" ? "kcal" : "g")</div>
+                                    <div class="progress mt-1" role="progressbar">
+                                        <div class="progress-bar progress-bar-striped bg-@status.Color"
+                                                style="width:@(Math.Round((item.Value * 100) / item.Goal))%">
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </Tooltip>
-                    </div>
-                }
-            </div>
-
+                        </div>
+                    </Tooltip>
+                </div>
+            }
             <div class="col-12 mt-3">
                 <button class="btn btn-warning shadow" @onclick="() => OpenNutrtionGoalModal(NutritionGoalView)" data-bs-toggle="modal" data-bs-target="#edit-modal">
                     <i class="bi bi-pencil-fill"></i>
@@ -92,25 +88,47 @@
 
         <!-- Prev-and-Next-buttons -->
         <div class="row mb-4">
-            <div class="col-4 text-start">
+            
+            <div class="col-12 d-flex justify-content-center mb-2 d-md-none">
+                <InputDate class="form-control px-4 text-center border-primary fw-bold w-100 shadow"
+                           @bind-Value="Date"
+                           @onfocusout="() => ChangeDateAsync(null)" />
+            </div>
+
+            <!-- Mobile-View -->
+            <div class="col-12 d-flex justify-content-between d-md-none">
+                <button class="btn btn-outline-primary shadow w-100 me-2" @onclick="() => ChangeDateAsync(0)">
+                    <i class="bi bi-caret-left-fill"></i>
+                    Vorheriger Tag
+                </button>
+                <button class="btn btn-outline-primary shadow w-100 ms-2" @onclick="() => ChangeDateAsync(1)"
+                        disabled="@(Date == DateOnly.FromDateTime(DateTime.Now))">
+                    <i class="bi bi-caret-right-fill"></i>
+                    Nächster Tag
+                </button>
+            </div>
+
+            <!--Desktop-View -->
+            <div class="col-4 text-start d-none d-md-block">
                 <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(0)">
                     <i class="bi bi-caret-left-fill"></i>
                     Vorheriger Tag
                 </button>
             </div>
-            <div class="col-4 text-center">
-                <InputDate 
-                    class="form-control px-4 text-center border-primary fw-bold" 
-                    @bind-Value="Date" 
-                    @onfocusout="() => ChangeDateAsync(null)" />
+            <div class="col-4 text-center d-none d-md-block">
+                <InputDate class="form-control px-4 text-center border-primary fw-bold shadow"
+                           @bind-Value="Date"
+                           @onfocusout="() => ChangeDateAsync(null)" />
             </div>
-            <div class="col-4 text-end">
-                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(1)" disabled="@(Date == DateOnly.FromDateTime(DateTime.Now) ? true : false)">
+            <div class="col-4 text-end d-none d-md-block">
+                <button class="btn btn-outline-primary w-100 shadow" @onclick="() => ChangeDateAsync(1)"
+                        disabled="@(Date == DateOnly.FromDateTime(DateTime.Now))">
                     <i class="bi bi-caret-right-fill"></i>
                     Nächster Tag
                 </button>
             </div>
         </div>
+
 
         <!--Meals lists-->
         <div class="row">
