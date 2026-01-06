@@ -52,8 +52,8 @@
                 var status = GetNutritionStatus(item.Value, item.Goal);
                 <div class="col-12 col-md mb-3">
                     <Tooltip Title="@status.Message" Color="@status.TooltipColor"  Placement="TooltipPlacement.Bottom">
-                        <div class="card h-100">
-                            <div class="card-body bg-@status.Color-subtle shadow d-flex align-items-start gap-2">
+                        <div class="card h-100 bg-@status.Color-subtle shadow">
+                            <div class="card-body d-flex align-items-start gap-2">
                                 <i class="bi @status.Icon position-absolute top-0 end-0 me-2 mt-2 fs-5"></i>
                                 <i class="bi @item.Icon fs-1"></i>
                                 <div class="flex-grow-1">
