@@ -1,5 +1,6 @@
 ﻿@page "/mymeals"
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.Globalization
 
 @inject ApplicationDbContext Context
 @inject ToastsService ToastService
@@ -44,7 +45,7 @@
     <div class="card-body">
         <h4 class="mb-3"> 
             Ernährungsziel -   
-            @Date.ToString("dddd, dd MMMM yyyy")
+            @Date.ToString("dddd, dd MMMM yyyy", new CultureInfo("de-DE"))
         </h4>
         <div class="row">
             @foreach (var item in nutritionItems)
